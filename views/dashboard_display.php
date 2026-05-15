@@ -3,8 +3,6 @@
  * Display Template for Dashboard - Restored to 100% Original UI
  */
 ?>
-<!-- Chart.js for data visualization -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- Header Greeting Section -->
 <div class="dashboard-greeting" style="margin-bottom: 2.5rem;">
@@ -78,59 +76,5 @@
     </div>
 </div>
 
-<!-- Interface: Visual Analytics -->
-<div class="analytics-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 3.5rem;">
-    <div class="chart-widget" style="background: white; padding: 2rem; border-radius: 16px; border: 1px solid #e2e8f0;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 2rem; font-weight: 700;">Bi-Weekly Circulation Analysis</h3>
-        <div style="position: relative; height: 350px; width: 100%;">
-            <canvas id="circulationTrendChart"></canvas>
-        </div>
-    </div>
-    
-    <div class="top-books-widget" style="background: #1e293b; padding: 2rem; border-radius: 16px; color: #f8fafc;">
-        <h3 style="font-size: 1rem; margin-bottom: 2rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Top Performing Titles</h3>
-        <div style="display:flex; flex-direction: column; gap: 1.25rem;">
-            <?php 
-            if ($top_titles_recordset && mysqli_num_rows($top_titles_recordset) > 0) {
-                $ordinal_rank = 1;
-                while ($title_data = mysqli_fetch_assoc($top_titles_recordset)) {
-                    echo '
-                    <div style="display:flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 1rem;">
-                        <span style="font-weight: 600; font-size: 0.95rem; line-height: 1.4; max-width: 75%;">
-                             <span style="color: #64748b; margin-right: 8px;">0' . $ordinal_rank . '</span> ' . htmlspecialchars($title_data['title']) . '
-                        </span>
-                        <span style="font-size: 0.8rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 6px;">
-                            ' . $title_data['borrow_frequency'] . '
-                        </span>
-                    </div>';
-                    $ordinal_rank++;
-                }
-            } else {
-                echo "<p style='color: #64748b; font-size: 0.9rem; font-style: italic;'>Data pending analytics cycle...</p>";
-            }
-            ?>
-        </div>
-    </div>
-</div>
 
-<script>
-const trendCtx = document.getElementById('circulationTrendChart').getContext('2d');
-const temporalLabels = [];
-for (let i = 6; i >= 0; i--) {
-    let d = new Date(); d.setDate(d.getDate() - i);
-    temporalLabels.push(d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }));
-}
 
-new Chart(trendCtx, {
-    type: 'line',
-    data: {
-        labels: temporalLabels,
-        datasets: [{
-            label: 'Transaction Volume',
-            data: [5, 18, 12, 28, 22, 14, <?php echo max(5, $pending_circulation_count); ?>], 
-            borderColor: '#0284c7', backgroundColor: 'rgba(2, 132, 199, 0.05)', borderWidth: 4, tension: 0.4, fill: true
-        }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-});
-</script>
