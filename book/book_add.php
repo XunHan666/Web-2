@@ -49,13 +49,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $category_id = getLookupId($db_connect, 'categories', $_POST['category_input']);
     $publisher_id = getLookupId($db_connect, 'publishers', $_POST['publisher_input']);
 
-    $cover_image_path = $book_id ? $book_data['cover_image'] : null;
+    $cover_image_path = $book_id ? ($book_data['cover_image'] ?? null) : null;
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == UPLOAD_ERR_OK) {
-        $upload_dir = '../uploads/books/';
-        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
-        $unique_filename = 'book_' . uniqid() . '.' . pathinfo($_FILES['cover_image']['name'], PATHINFO_EXTENSION);
-        if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $upload_dir . $unique_filename)) {
-            $cover_image_path = 'uploads/books/' . $unique_filename;
+        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $file_info = pathinfo($_FILES['cover_image']['name']);
+        $extension = strtolower($file_info['extension'] ?? '');
+        
+        if (in_array($extension, $allowed_extensions)) {
+            $upload_dir = '../uploads/books/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+            $unique_filename = 'book_' . uniqid() . '.' . $extension;
+            if (move_uploaded_file($_FILES['cover_image']['tmp_name'], $upload_dir . $unique_filename)) {
+                $cover_image_path = 'uploads/books/' . $unique_filename;
+            }
+        } else {
+            showAlert("Invalid file type. Only images are allowed.", "error");
         }
     }
 
@@ -68,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             mysqli_query($db_connect, "DELETE FROM book_category WHERE book_id = $book_id");
             if ($category_id) mysqli_query($db_connect, "INSERT INTO book_category (book_id, category_id) VALUES ($book_id, $category_id)");
             
-            // Sync Quantity
+            // Sync Quantity: Only remove copies that are available and have no loan history
             $current_qty = (int)$book_data['quantity'];
             if ($new_qty > $current_qty) {
                 for ($i = 0; $i < ($new_qty - $current_qty); $i++) {
@@ -77,10 +85,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
             } elseif ($new_qty < $current_qty) {
                 $abs_diff = $current_qty - $new_qty;
-                $avail_res = mysqli_query($db_connect, "SELECT id FROM book_copies WHERE book_id = $book_id AND status = 'available' LIMIT $abs_diff");
-                while ($row = mysqli_fetch_assoc($avail_res)) {
+                // Find copies that are available AND have no entries in loan_details
+                $safe_to_delete_res = mysqli_query($db_connect, "
+                    SELECT bc.id FROM book_copies bc 
+                    LEFT JOIN loan_details ld ON bc.id = ld.book_copy_id 
+                    WHERE bc.book_id = $book_id 
+                    AND bc.status = 'available' 
+                    AND ld.id IS NULL 
+                    LIMIT $abs_diff");
+                
+                while ($row = mysqli_fetch_assoc($safe_to_delete_res)) {
                     $cid = $row['id'];
-                    mysqli_query($db_connect, "DELETE FROM loan_details WHERE book_copy_id = $cid");
                     mysqli_query($db_connect, "DELETE FROM book_copies WHERE id = $cid");
                 }
             }

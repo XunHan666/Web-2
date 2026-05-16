@@ -1,0 +1,72 @@
+<?php
+/**
+ * Display Template for Book Detail - 100% ORIGINAL UI
+ */
+?>
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- Navigation -->
+    <a href="books.php" style="text-decoration: none; color: #64748b; margin-bottom: 2rem; display: inline-block;">&larr; Back to Library</a>
+    
+    <div style="display: grid; grid-template-columns: 350px 1fr; gap: 3rem; background: var(--card-bg); padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+        
+        <!-- Book Cover Column -->
+        <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
+            <img src="<?php echo $display_image; ?>" alt="Cover" style="width: 100%; display: block;">
+        </div>
+
+        <!-- Book Details Column -->
+        <div>
+            <!-- Basic Tags -->
+            <span class="badge" style="background: var(--primary-color); color: white; margin-bottom: 1rem;">
+                <?php echo htmlspecialchars($book_data['category_names'] ?: 'Uncategorized'); ?>
+            </span>
+
+            <!-- Primary Header -->
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; line-height: 1.1; color: var(--text-color);">
+                <?php echo htmlspecialchars($book_data['title']); ?>
+            </h1>
+            <p style="font-size: 1.25rem; color: #64748b; margin-bottom: 2rem;">
+                By <?php echo htmlspecialchars($book_data['author_names'] ?: 'Unknown Author'); ?>
+            </p>
+
+            <!-- Detailed Stats Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div>
+                    <label style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Availability</label>
+                    <p style="font-size: 1.1rem; font-weight: 700; margin-top: 0.25rem;">
+                        <?php echo $book_data['available_copies']; ?> of <?php echo $book_data['total_copies']; ?> units ready
+                    </p>
+                </div>
+                <div>
+                    <label style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Publishing</label>
+                    <p style="font-size: 1.1rem; font-weight: 600; margin-top: 0.25rem;">
+                        <?php echo htmlspecialchars($book_data['publisher_name'] ?: 'Unknown'); ?> (<?php echo $book_data['pub_year']; ?>)
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Summary Description -->
+            <div style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-color); font-weight: 700; text-transform: uppercase;">About this Book</h3>
+                <p style="color: #475569; line-height: 1.8;">
+                    <?php echo !empty($book_data['description']) ? nl2br(htmlspecialchars($book_data['description'])) : "No detailed description provided."; ?>
+                </p>
+            </div>
+
+            <!-- Management Actions -->
+            <div style="margin-top: 3rem; display: flex; gap: 1rem; align-items: center;">
+                <?php if ($book_data['available_copies'] > 0): ?>
+                    <a href="../loan/borrow.php" class="btn btn-primary" style="padding: 1rem 2.5rem; border-radius: 10px;">Create Loan Transaction</a>
+                <?php else: ?>
+                    <button class="btn" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; padding: 1rem 2.5rem; border-radius: 10px;" disabled>All Copies are Borrowed</button>
+                <?php endif; ?>
+                
+                <a href="book_add.php?id=<?php echo $book_data['id']; ?>" class="btn" style="border: 1px solid var(--border-color); padding: 1rem 2.5rem; border-radius: 10px; background: white; color: #475569;">Modify Records</a>
+            </div>
+            
+            <p style="margin-top: 2rem; color: #cbd5e1; font-size: 0.8rem; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
+                System Reference: #<?php echo $book_data['id']; ?>
+            </p>
+        </div>
+    </div>
+</div>
