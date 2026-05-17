@@ -14,7 +14,7 @@
             
             <form action="" method="POST">
                 <input type="hidden" name="update_settings" value="1">
-                <div class="form-grid-three">
+                <div class="form-grid-two" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
                     <div class="form-group">
                         <label for="fine_per_day">Late Return Fine (VND/Day)</label>
                         <input type="number" id="fine_per_day" name="fine_per_day" value="<?php echo htmlspecialchars($current_fine); ?>" required>
@@ -24,11 +24,6 @@
                         <label for="max_loan_days">Standard Loan Duration (Days)</label>
                         <input type="number" id="max_loan_days" name="max_loan_days" value="<?php echo htmlspecialchars($current_duration); ?>" required>
                         <span class="reader-muted">Default borrowing period</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="max_books_per_reader">Max Books Per Reader</label>
-                        <input type="number" id="max_books_per_reader" name="max_books_per_reader" value="<?php echo htmlspecialchars($current_max_books); ?>" required>
-                        <span class="reader-muted">Borrowing limit per member</span>
                     </div>
                 </div>
                 

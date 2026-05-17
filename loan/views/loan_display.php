@@ -86,10 +86,8 @@
                                 <a href="loan_detail.php?id=<?php echo $loan['id']; ?>" style="color: #64748b; text-decoration: none;">Details</a> | 
                                 <?php if ($loan['status'] !== 'closed'): ?>
                                     <a href="return.php?loan_id=<?php echo $loan['id']; ?>" style="color: #10b981; text-decoration: none;">Return</a> | 
-                                    <span style="color: #ef4444; font-weight: 700; cursor: help;" title="Only closed loans can be deleted">Delete</span>
-                                <?php else: ?>
-                                    <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $loan['id']; ?>, 'Transaction #<?php echo $loan['id']; ?>', 'loan', 'loan_delete.php')" style="color: #ef4444; font-weight: 700; text-decoration: none;">Delete</a>
                                 <?php endif; ?>
+                                <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $loan['id']; ?>, 'Transaction #<?php echo $loan['id']; ?>', 'loan', 'loan_delete.php')" style="color: #ef4444; font-weight: 700; text-decoration: none;">Delete</a>
                             </div>
                         </td>
                     </tr>

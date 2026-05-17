@@ -22,7 +22,7 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
     <title>LibraryOS</title>
     
     <!-- External CSS and Google Fonts -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=2.0">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=2.1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
