@@ -5,7 +5,7 @@
 require_once 'env/config.php';
 include 'inc/header.php';
 
-// KPIs
+// Statistical Data
 $total_inventory_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies"))[0];
 $ready_for_loan_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies WHERE status = 'available'"))[0];
 $total_registered_readers = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM readers"))[0];
