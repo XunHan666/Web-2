@@ -22,10 +22,10 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
     <title>LibraryOS</title>
     
     <!-- External CSS and Google Fonts -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=1.3">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=2.1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Notification Library (SweetAlert2) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -120,27 +120,29 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
 
     <div class="container">
 <?php
-/**
- * Global Helper: Show Notification Popup
- * @param string $message The text to display
- * @param string $type success, error, info
- */
-function showAlert($message, $type = 'success') {
-    // Standardize SweetAlert icons
-    $icon_type = ($type == 'error') ? 'error' : (($type == 'info') ? 'info' : 'success');
-    
-    echo "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: '$icon_type',
-                title: 'LibraryOS Notification',
-                text: '" . addslashes($message) . "',
-                confirmButtonColor: '#3b82f6',
-                showClass: { popup: '', backdrop: '' },
-                hideClass: { popup: '', backdrop: '' }
+if (!function_exists('showAlert')) {
+    /**
+     * Global Helper: Show Notification Popup
+     * @param string $message The text to display
+     * @param string $type success, error, info
+     */
+    function showAlert($message, $type = 'success') {
+        // Standardize SweetAlert icons
+        $icon_type = ($type == 'error') ? 'error' : (($type == 'info') ? 'info' : 'success');
+        
+        echo "<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: '$icon_type',
+                    title: 'LibraryOS Notification',
+                    text: '" . addslashes($message) . "',
+                    confirmButtonColor: '#3b82f6',
+                    showClass: { popup: '', backdrop: '' },
+                    hideClass: { popup: '', backdrop: '' }
+                });
             });
-        });
-    </script>";
+        </script>";
+    }
 }
 ?>
 <?php 
