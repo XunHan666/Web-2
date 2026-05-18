@@ -3,9 +3,14 @@
  * Database Configuration and Connection
  */
 
+// 1. Thông số kết nối dành cho Localhost
+$hostname = "localhost";
+$username = "root";
+$password = "";
+$database = "library_db";
+
 // Establish connection to MySQL database
-// Parameters: host, username, password, database_name
-$db_connect = mysqli_connect("localhost", "root", "", "library_db");
+$db_connect = mysqli_connect($hostname, $username, $password, $database);
 
 // Check if connection was successful
 if (!$db_connect) {
