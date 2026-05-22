@@ -364,12 +364,14 @@ td {
     letter-spacing: 0.05em;
     padding: 1rem 1.5rem;
     border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
 }
 
 .datatable td {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .datatable tbody tr {
@@ -498,12 +500,12 @@ td {
 
 .compact-stats {
     gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
 }
 .compact-stats .stat-card {
     padding: 1.25rem 1.5rem;
 }
 .stat-card-danger {
-    background: #fdf6f6;
     border-left-color: var(--danger);
 }
 

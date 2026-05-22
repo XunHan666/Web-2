@@ -96,7 +96,7 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
             color: var(--text-color);
             font-weight: 500;
             font-size: 0.95rem;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 1rem 0.75rem 1.75rem;
             border-radius: 8px;
             transition: all 0.2s ease;
         }
@@ -275,21 +275,23 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
  * @param string $message The text to display
  * @param string $type success, error, info
  */
-function showAlert($message, $type = 'success') {
-    $icon_type = ($type == 'error') ? 'error' : (($type == 'info') ? 'info' : 'success');
-    
-    echo "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: '$icon_type',
-                title: 'LibraryOS Notification',
-                text: '" . addslashes($message) . "',
-                confirmButtonColor: '#1e4646',
-                showClass: { popup: '', backdrop: '' },
-                hideClass: { popup: '', backdrop: '' }
+if (!function_exists('showAlert')) {
+    function showAlert($message, $type = 'success') {
+        $icon_type = ($type == 'error') ? 'error' : (($type == 'info') ? 'info' : 'success');
+        
+        echo "<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: '$icon_type',
+                    title: 'LibraryOS Notification',
+                    text: '" . addslashes($message) . "',
+                    confirmButtonColor: '#1e4646',
+                    showClass: { popup: '', backdrop: '' },
+                    hideClass: { popup: '', backdrop: '' }
+                });
             });
-        </script>";
-    }
+            </script>";
+        }
 }
 ?>
 <?php 

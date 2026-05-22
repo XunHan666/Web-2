@@ -20,12 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql_query = "SELECT u.*, r.name as role_name 
                   FROM users u 
                   JOIN roles r ON u.role_id = r.id 
-                  WHERE u.username = '$input_username' AND u.status = 'active'";
+                  WHERE u.username = '$username' AND u.status = 'active'";
     
     $query_result = mysqli_query($db_connect, $sql_query);
 
-    if ($res && mysqli_num_rows($res) > 0) {
-        $user = mysqli_fetch_assoc($res);
+    if ($query_result && mysqli_num_rows($query_result) > 0) {
+        $user = mysqli_fetch_assoc($query_result);
         if (password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];

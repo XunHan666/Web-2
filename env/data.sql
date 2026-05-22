@@ -241,5 +241,4 @@ INSERT INTO users (id, username, password, full_name, role_id, status, created_a
 -- 12. Insert Settings
 INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('fine_per_day', '5000', 'Late return fine amount per day in VND'),
-('max_books_per_reader', '3', 'Maximum number of books a reader can have at once'),
 ('max_loan_days', '5', 'Standard number of days allowed for a loan');

@@ -1,4 +1,4 @@
-s<?php
+<?php
 /**
  * Book Inventory Directory - Controller (Fixed Header Issue & Image Logic)
  */
@@ -105,12 +105,7 @@ mysqli_stmt_bind_param($stmt, "sss", $search_pattern, $search_pattern, $search_p
 mysqli_stmt_execute($stmt);
 $books_result = mysqli_stmt_get_result($stmt);
 
-// Chuyển kết quả sang mảng để xử lý logic ảnh bìa thông minh
-$books_list = [];
-while ($book = mysqli_fetch_assoc($books_result)) {
-    $title = $book['title'];
-    $display_image = "https://placehold.co/100x150/007bff/white?text=" . urlencode(substr($title, 0, 20));
-
+?>
 <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
     <div class="stat-card" style="padding: 1.5rem; border-left-color: var(--primary-color);">
         <h3 style="margin-bottom: 0;">Total Inventory</h3>
@@ -508,10 +503,10 @@ function changeCopies(id, delta, title = '', currentCount = 0) {
             if (result.isConfirmed) {
                 window.location.href = `books.php?update_copies=${id}&delta=${delta}`;
             }
-        }
+        });
+    } else {
+        window.location.href = `books.php?update_copies=${id}&delta=${delta}`;
     }
-    $book['display_image'] = $display_image;
-    $books_list[] = $book;
 }
 
 <?php include '../inc/footer.php'; ?>

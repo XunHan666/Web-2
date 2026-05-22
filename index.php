@@ -35,8 +35,6 @@ $staff_role_label = isset($_SESSION['role_name']) ? $_SESSION['role_name'] : 'St
 $time_of_day_greeting = "Good " . (date('H') < 12 ? 'Morning' : (date('H') < 18 ? 'Afternoon' : 'Evening')) . ", " . $staff_display_name . "!";
 $role_context_banner = "Operational Role: " . ucfirst($staff_role_label);
 
-include 'views/dashboard_display.php';
-include 'inc/footer.php';
 ?>
 
 <div class="dashboard-greeting" style="margin-bottom: 3rem;">
