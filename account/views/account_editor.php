@@ -4,13 +4,13 @@
  */
 ?>
 <div class="breadcrumb" style="margin-bottom: 2rem; color: #64748b; font-size: 0.9rem;">
-    Home / Account Management / <strong style="color: var(--text-color);"><?php echo isset($user_id) ? 'Edit Record' : 'New Enrollment'; ?></strong>
+    Home / Account Management / <strong style="color: var(--text-color);"><?php echo isset($account_id) ? 'Edit Record' : 'New Enrollment'; ?></strong>
 </div>
 
-<div style="max-width: 800px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 1.5rem;"><?php echo isset($user_id) ? 'Modify Account' : 'Register Account'; ?></h1>
-        <a href="accounts.php" class="btn" style="background: #f1f5f9; color: #475569; font-size: 0.9rem;">&larr; Back to Directory</a>
+<div class="form-wrapper" style="max-width: 600px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem;"><?php echo isset($account_id) ? 'Modify Account' : 'Register Account'; ?></h1>
+        <a href="accounts.php" class="btn" style="background: #f1f5f9; color: #475569;">&larr; Back to Directory</a>
     </div>
 
     <div class="form-card" style="padding: 2rem; border-radius: 12px; border: 1px solid #e2e8f0;">
@@ -32,8 +32,8 @@
                     <input type="text" name="username" value="<?php echo htmlspecialchars($user_data['username'] ?? ''); ?>" placeholder="e.g. john.librarian" required style="width: 100%;">
                 </div>
                 <div class="form-group">
-                    <label><?php echo isset($user_id) ? 'New Password (Blank to keep)' : 'Initial Password *'; ?></label>
-                    <input type="password" name="password" placeholder="••••••••" <?php echo isset($user_id) ? '' : 'required'; ?> style="width: 100%;">
+                    <label><?php echo isset($account_id) ? 'New Password (Blank to keep)' : 'Initial Password *'; ?></label>
+                    <input type="password" name="password" placeholder="••••••••" <?php echo isset($account_id) ? '' : 'required'; ?> style="width: 100%;">
                 </div>
                 <div class="form-group">
                     <label>Assigned Role *</label>
@@ -73,7 +73,7 @@
             
             <div style="border-top: 1px solid #f1f5f9; padding-top: 2rem; display: flex; justify-content: flex-end;">
                 <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-weight: 700;">
-                    <?php echo isset($user_id) ? 'Update Account Record' : 'Initialize Account'; ?>
+                    <?php echo isset($account_id) ? 'Update Account Record' : 'Initialize Account'; ?>
                 </button>
             </div>
         </form>

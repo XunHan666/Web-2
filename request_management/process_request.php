@@ -26,15 +26,16 @@ try {
     if ($req['type'] === 'borrow_book') {
         $loan_id = $req['target_id'];
         $l_status = ($action === 'approve') ? 'ongoing' : 'rejected';
-        $c_status = ($action === 'approve') ? 'borrowed' : 'available';
+        $ld_status = ($action === 'approve') ? 'borrowed' : 'rejected';
+        $bc_status = ($action === 'approve') ? 'borrowed' : 'available';
         
         $sql_loan = "UPDATE loans SET status = '$l_status'";
         if ($action === 'approve') {
             $sql_loan .= ", borrow_date = CURDATE(), due_date = DATE_ADD(CURDATE(), INTERVAL 5 DAY)";
         }
         mysqli_query($db_connect, "$sql_loan WHERE id = $loan_id");
-        mysqli_query($db_connect, "UPDATE loan_details SET status = '$c_status' WHERE loan_id = $loan_id");
-        mysqli_query($db_connect, "UPDATE book_copies bc JOIN loan_details ld ON bc.id = ld.book_copy_id SET bc.status = '$c_status' WHERE ld.loan_id = $loan_id");
+        mysqli_query($db_connect, "UPDATE loan_details SET status = '$ld_status' WHERE loan_id = $loan_id");
+        mysqli_query($db_connect, "UPDATE book_copies bc JOIN loan_details ld ON bc.id = ld.book_copy_id SET bc.status = '$bc_status' WHERE ld.loan_id = $loan_id");
         
     } elseif ($req['type'] === 'librarian_registration' && $action === 'approve') {
         mysqli_query($db_connect, "UPDATE accounts SET status = 'active' WHERE id = {$req['target_id']}");

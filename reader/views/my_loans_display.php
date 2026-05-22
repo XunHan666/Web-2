@@ -31,7 +31,11 @@
                     <?php else: ?>
                         Requested recently
                     <?php endif; ?>
-                    · Due <?php echo date('M d, Y', strtotime($data['due_date'])); ?>
+                    <?php if ($data['status'] === 'pending' || $data['status'] === 'rejected'): ?>
+                        · Due: TBD
+                    <?php else: ?>
+                        · Due <?php echo date('M d, Y', strtotime($data['due_date'])); ?>
+                    <?php endif; ?>
                 </span>
             </div>
             <span class="<?php echo $badge; ?>"><?php echo $label; ?></span>

@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Authentication and Security Check
 $current_page = basename($_SERVER['PHP_SELF']);
-$public_pages = ['login.php', 'register.php', 'reader_register.php', 'forgot_password.php'];
+$public_pages = ['login.php', 'register.php', 'forgot_password.php'];
 
 // If user is not logged in and current page is not public, redirect to login
 if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages)) {
@@ -99,7 +99,7 @@ if (isset($_SESSION['role_id'])) {
                     <?php endif; ?>
                     <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans Management</a></li>
                     <li><a href="<?php echo BASE_URL; ?>request_management/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
-                        Requests
+                        Request Management
                         <?php if(isset($pending_count) && $pending_count > 0): ?>
                             <span style="background:var(--danger);color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:4px;"><?php echo $pending_count; ?></span>
                         <?php endif; ?>

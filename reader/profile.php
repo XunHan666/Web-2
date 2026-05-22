@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $username = mysqli_fetch_assoc(mysqli_query($db_connect,"SELECT username FROM accounts WHERE id=$uid"))['username'];
-?>
-
+?><?php
 include 'views/profile_display.php';
 include '../inc/footer.php';
+?>

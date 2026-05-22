@@ -15,8 +15,8 @@ $submission_error = '';
 $user_data = [];
 
 if (isset($_GET['id'])) {
-    $user_id = (int)$_GET['id'];
-    $res = mysqli_query($db_connect, "SELECT * FROM accounts WHERE id = $user_id");
+    $account_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+    $res = mysqli_query($db_connect, "SELECT * FROM accounts WHERE id = " . (int)$account_id);
     if ($row = mysqli_fetch_assoc($res)) {
         $user_data = $row;
     } else {
@@ -38,28 +38,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dob = mysqli_real_escape_string($db_connect, trim($_POST['dob'] ?? ''));
     $gender = mysqli_real_escape_string($db_connect, trim($_POST['gender'] ?? 'male'));
 
-    if (empty($username) || empty($full_name) || (empty($plain_password) && !isset($user_id))) {
+    if (empty($username) || empty($full_name) || (empty($plain_password) && !isset($account_id))) {
         $submission_error = "Fields missing.";
     } else {
-        if (isset($user_id) && $user_id == 1) {
+        if (isset($account_id) && $account_id == 1) {
             $submission_error = "Cannot modify the primary Admin account from this panel.";
         } else {
             $hash = password_hash($plain_password, PASSWORD_DEFAULT);
-            if (isset($user_id)) {
+            if (isset($account_id)) {
                 $sql = "UPDATE accounts SET username='$username', full_name='$full_name', role_id=$role_id, phone='$phone', email='$email', address='$address', dob='$dob', gender='$gender'";
                 if (!empty($plain_password)) {
                     $sql .= ", password='$hash'";
                 }
-                $sql .= " WHERE id=$user_id";
+                $sql .= " WHERE id=$account_id";
             } else {
                 $sql = "INSERT INTO accounts (username, password, full_name, phone, email, address, dob, gender, role_id, status) VALUES ('$username', '$hash', '$full_name', '$phone', '$email', '$address', '$dob', '$gender', $role_id, 'active')";
             }
             
             if (mysqli_query($db_connect, $sql)) {
-                if (isset($user_id) && !empty($plain_password) && $req_id > 0) {
+                if (isset($account_id) && !empty($plain_password) && $req_id > 0) {
                     mysqli_query($db_connect, "UPDATE requests SET status='approved' WHERE id=$req_id AND type='password_reset'");
                 }
-                showAlert(isset($user_id) ? "Account updated." : "Account created.");
+                showAlert(isset($account_id) ? "Account updated." : "Account created.");
                 echo "<script>setTimeout(() => { window.location.href = 'accounts.php'; }, 2000);</script>";
             }
         }

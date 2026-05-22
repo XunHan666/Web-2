@@ -46,7 +46,7 @@
                 <tr>
                     <td><a href="<?php echo BASE_URL; ?>reader/book.php?id=<?php echo $r['book_id']; ?>" style="font-weight:600;color:#0284c7;text-decoration:none"><?php echo htmlspecialchars($r['title']); ?></a></td>
                     <td style="text-align:center;color:#64748b;font-size:0.875rem"><?php echo $r['borrow_date'] ? date('M d, Y', strtotime($r['borrow_date'])) : '—'; ?></td>
-                    <td style="text-align:center;font-size:0.875rem"><?php echo $r['due_date'] ? date('M d, Y', strtotime($r['due_date'])) : '—'; ?></td>
+                    <td style="text-align:center;font-size:0.875rem"><?php echo ($r['item_status'] == 'pending') ? '—' : ($r['due_date'] ? date('M d, Y', strtotime($r['due_date'])) : '—'); ?></td>
                     <td style="text-align:center">
                         <?php if ($r['item_status'] == 'pending'): ?>
                             <span class="badge-warn">Pending Approval</span>
