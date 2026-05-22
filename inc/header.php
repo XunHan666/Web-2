@@ -32,7 +32,14 @@ if (isset($_SESSION['role_id'])) {
             mysqli_stmt_bind_param($stmt, 'i', $_SESSION['user_id']);
             mysqli_stmt_execute($stmt);
             $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-            if (!$reader) { session_destroy(); header('Location: ' . BASE_URL . 'authen/login.php'); exit(); }
+            if (!$reader) { 
+                $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, user_id, status) VALUES (?, ?, 'active')");
+                mysqli_stmt_bind_param($ins_stmt, 'si', $_SESSION['full_name'], $_SESSION['user_id']);
+                mysqli_stmt_execute($ins_stmt);
+                
+                mysqli_stmt_execute($stmt);
+                $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+            }
         }
     } else {
         if ($is_reader_area) {
@@ -85,9 +92,9 @@ if (isset($_SESSION['role_id'])) {
                     <?php else: ?>
                     <!-- ===== STAFF / ADMIN MENU ===== -->
                     <li><a href="<?php echo BASE_URL; ?>index.php" class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Dashboard</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans Management</a></li>
                     <li><a href="<?php echo BASE_URL; ?>loan/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
                         Requests
                         <?php if(isset($pending_count) && $pending_count > 0): ?>

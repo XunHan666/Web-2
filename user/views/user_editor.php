@@ -4,12 +4,12 @@
  */
 ?>
 <div class="breadcrumb" style="margin-bottom: 2rem; color: #64748b; font-size: 0.9rem;">
-    Home / Staff Management / <strong style="color: var(--text-color);"><?php echo isset($user_id) ? 'Edit Record' : 'New Enrollment'; ?></strong>
+    Home / User Management / <strong style="color: var(--text-color);"><?php echo isset($user_id) ? 'Edit Record' : 'New Enrollment'; ?></strong>
 </div>
 
 <div style="max-width: 800px; margin: 0 auto;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 1.5rem;"><?php echo isset($user_id) ? 'Modify Staff Account' : 'Register Staff Member'; ?></h1>
+        <h1 style="font-size: 1.5rem;"><?php echo isset($user_id) ? 'Modify User Account' : 'Register User'; ?></h1>
         <a href="users.php" class="btn" style="background: #f1f5f9; color: #475569; font-size: 0.9rem;">&larr; Back to Directory</a>
     </div>
 
@@ -48,7 +48,7 @@
             
             <div style="border-top: 1px solid #f1f5f9; padding-top: 2rem; display: flex; justify-content: flex-end;">
                 <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-weight: 700;">
-                    <?php echo isset($user_id) ? 'Update Staff Record' : 'Initialize Account'; ?>
+                    <?php echo isset($user_id) ? 'Update User Record' : 'Initialize Account'; ?>
                 </button>
             </div>
         </form>

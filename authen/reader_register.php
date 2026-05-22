@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         mysqli_begin_transaction($db_connect);
         try {
-            $s1 = mysqli_prepare($db_connect, "INSERT INTO users (username,password,full_name,email,role_id,status) VALUES (?,?,?,?,3,'active')");
-            mysqli_stmt_bind_param($s1,'ssss',$username,$hash,$name,$email);
+            $s1 = mysqli_prepare($db_connect, "INSERT INTO users (username,password,full_name,role_id,status) VALUES (?,?,?,3,'active')");
+            mysqli_stmt_bind_param($s1,'sss',$username,$hash,$name);
             mysqli_stmt_execute($s1);
             $uid = mysqli_insert_id($db_connect);
 

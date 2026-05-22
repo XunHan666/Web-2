@@ -26,5 +26,7 @@ while ($r = mysqli_fetch_assoc($res)) {
 }
 ?>
 
+<?php
 include 'views/my_loans_display.php';
 include '../inc/footer.php';
+?>

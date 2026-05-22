@@ -4,12 +4,12 @@
  */
 ?>
 <div class="breadcrumb" style="margin-bottom: 1.5rem; color: #64748b; font-size: 0.9rem;">
-    Home / <strong style="color: var(--text-color);">Circulation Management</strong>
+    Home / <strong style="color: var(--text-color);">Loan Management</strong>
 </div>
 
 <div class="search-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
     <div>
-        <h1 style="font-size: 1.5rem; color: var(--text-color); margin-bottom: 0.25rem;">Circulation Log</h1>
+        <h1 style="font-size: 1.5rem; color: var(--text-color); margin-bottom: 0.25rem;">Loan Log</h1>
         <p style="color: #64748b; font-size: 0.9rem;">Monitor and manage book loans & returns</p>
     </div>
     
@@ -42,7 +42,7 @@
         </thead>
         <tbody>
             <?php if (mysqli_num_rows($loans_result) == 0): ?>
-                <tr><td colspan="7" align="center" style="padding: 3rem; color: #64748b;">No circulation records found.</td></tr>
+                <tr><td colspan="7" align="center" style="padding: 3rem; color: #64748b;">No loan records found.</td></tr>
             <?php else: ?>
                 <?php while ($loan = mysqli_fetch_assoc($loans_result)): ?>
                     <tr>

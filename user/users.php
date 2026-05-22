@@ -22,7 +22,7 @@ $staff_query = "
     SELECT u.*, r.name as role_name 
     FROM users u 
     JOIN roles r ON u.role_id = r.id 
-    WHERE u.role_id = 2
+    WHERE u.role_id != 1
     ORDER BY u.id ASC
 ";
 $staff_result = mysqli_query($db_connect, $staff_query);

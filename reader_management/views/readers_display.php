@@ -36,7 +36,7 @@
     <a href="reader_add.php" class="btn btn-primary" style="border-radius: 8px;">+ Register Reader</a>
 </div>
 
-<div class="table-container" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+<div class="table-container" style="border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;">
     <table class="datatable">
         <thead>
             <tr style="background: #f8fafc;">
@@ -46,7 +46,7 @@
                 <th style="text-align: left;">Join Date</th>
                 <th style="text-align: center;">Activity</th>
                 <th style="text-align: center;">Status</th>
-                <th style="text-align: right;">Actions</th>
+                <th style="text-align: center; white-space: nowrap;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -78,8 +78,8 @@
                                 <?php echo ucfirst($reader['status']); ?>
                             </span>
                         </td>
-                        <td align="right">
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+                        <td align="center" style="white-space: nowrap;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
                                 <a href="javascript:void(0)" onclick="openHistory(<?php echo $reader['id']; ?>, '<?php echo addslashes($reader['name']); ?>')" style="color: #64748b; text-decoration: underline; font-size: 0.9rem;">History</a>
                                 <span style="color: #e2e8f0;">|</span>
                                 <a href="reader_add.php?id=<?php echo $reader['id']; ?>" style="color: #0ea5e9; text-decoration: none; font-size: 0.9rem;">Edit</a>

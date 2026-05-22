@@ -68,7 +68,7 @@ $role_context_banner = "Operational Role: " . ucfirst($staff_role_label);
     </div>
     
     <div class="stat-card" style="border-left: 4px solid var(--success);">
-        <h3 style="color: var(--success);">Circulation Units</h3>
+        <h3 style="color: var(--success);">Loan Units</h3>
         <div class="value" style="color: var(--success);"><?php echo $ready_for_loan_count; ?></div>
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Ready on shelves</p>
     </div>

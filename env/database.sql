@@ -54,44 +54,7 @@ CREATE TABLE book_copies (
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
 
--- 4. Table: readers
-CREATE TABLE readers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    phone VARCHAR(20) UNIQUE,
-    email VARCHAR(100) UNIQUE,
-    address TEXT,
-    dob DATE,
-    gender ENUM('male', 'female', 'other') DEFAULT 'male',
-    status ENUM('active', 'inactive') DEFAULT 'active', -- Account status control
-    user_id INT NULL DEFAULT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 5. Table: loans (Loan Transaction - Master)
-CREATE TABLE loans (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    reader_id INT,
-    borrow_date DATE DEFAULT (CURRENT_DATE),
-    due_date DATE NOT NULL,
-    status ENUM('pending', 'ongoing', 'partial', 'closed', 'rejected') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (reader_id) REFERENCES readers(id)
-);
-
--- 6. Table: loan_details (Circulation Details & Returns)
-CREATE TABLE loan_details (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    loan_id INT,
-    book_copy_id INT, -- Physical asset borrowed
-    return_date DATE NULL, -- NULL means not yet returned
-    fine_amount DECIMAL(10,2) DEFAULT 0, -- Late return or damage fine
-    status ENUM('pending', 'borrowed', 'returned', 'rejected') DEFAULT 'pending',
-    FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE,
-    FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
-);
-
--- 7. Authorization & System Users
+-- 4. Authorization & System Users
 CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
@@ -108,15 +71,47 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
+-- 5. Table: readers
+CREATE TABLE readers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    phone VARCHAR(20) UNIQUE,
+    email VARCHAR(100) UNIQUE,
+    address TEXT,
+    dob DATE,
+    gender ENUM('male', 'female', 'other') DEFAULT 'male',
+    status ENUM('active', 'inactive') DEFAULT 'active', -- Account status control
+    user_id INT NULL DEFAULT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- 6. Table: loans (Loan Transaction - Master)
+CREATE TABLE loans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    reader_id INT,
+    borrow_date DATE DEFAULT (CURRENT_DATE),
+    due_date DATE NOT NULL,
+    status ENUM('pending', 'ongoing', 'partial', 'closed', 'rejected') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (reader_id) REFERENCES readers(id)
+);
+
+-- 7. Table: loan_details (Circulation Details & Returns)
+CREATE TABLE loan_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    loan_id INT,
+    book_copy_id INT, -- Physical asset borrowed
+    return_date DATE NULL, -- NULL means not yet returned
+    fine_amount DECIMAL(10,2) DEFAULT 0, -- Late return or damage fine
+    status ENUM('pending', 'borrowed', 'returned', 'rejected') DEFAULT 'pending',
+    FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE,
+    FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
+);
+
 -- 8. System Configuration
 CREATE TABLE settings (
     setting_key VARCHAR(50) PRIMARY KEY,
     setting_value VARCHAR(255) NOT NULL,
     description TEXT
 );
-
--- 9. Foreign Keys that depend on later tables
-ALTER TABLE readers
-    ADD CONSTRAINT fk_reader_user
-    FOREIGN KEY (user_id) REFERENCES users(id)
-    ON DELETE SET NULL ON UPDATE CASCADE;
