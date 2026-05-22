@@ -1,57 +1,11 @@
 <?php
 /**
- * Settings - Controller
+ * Editor Template for Settings - 100% ORIGINAL UI
  */
-require_once '../env/config.php';
-require_once 'sys_rules.php';
-include '../inc/header.php';
-
-if ($_SESSION['role_id'] != 1) {
-    showAlert("Admin only.", "error");
-    echo "<script>window.location.href = '../index.php';</script>";
-    exit();
-}
-
-$status = ''; $status_type = 'success';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
-    $fine = $_POST['fine_per_day'];
-    $duration = $_POST['max_loan_days'];
-
-    mysqli_begin_transaction($db_connect);
-    try {
-        update_setting('fine_per_day', $fine);
-        update_setting('max_loan_days', $duration);
-        
-        mysqli_commit($db_connect);
-        $status = "System configurations updated successfully!";
-    } catch (Exception $e) {
-        mysqli_rollback($db_connect);
-        $status = "Error updating settings: " . $e->getMessage();
-        $status_type = "error";
-    }
-}
-
-$current_fine = get_setting('fine_per_day', '5000');
-$current_duration = get_setting('max_loan_days', '5');
 ?>
-
 <div class="search-header">
     <h1 style="font-size: 1.5rem; color: var(--text-color);">System Configuration</h1>
 </div>
-
-<?php if ($status): ?>
-    <script>
-        Swal.fire({
-            icon: '<?php echo $status_type; ?>',
-            title: 'System Update',
-            text: '<?php echo $status; ?>',
-            confirmButtonColor: '#3b82f6',
-            showClass: { popup: '', backdrop: '' },
-            hideClass: { popup: '', backdrop: '' }
-        });
-    </script>
-<?php endif; ?>
 
 <div class="split-form-container">
     <div class="form-col data-col">
@@ -60,7 +14,7 @@ $current_duration = get_setting('max_loan_days', '5');
             
             <form action="" method="POST">
                 <input type="hidden" name="update_settings" value="1">
-                <div class="form-grid-two">
+                <div class="form-grid-two" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
                     <div class="form-group">
                         <label for="fine_per_day">Late Return Fine (VND/Day)</label>
                         <input type="number" id="fine_per_day" name="fine_per_day" value="<?php echo htmlspecialchars($current_fine); ?>" required>
@@ -84,5 +38,3 @@ $current_duration = get_setting('max_loan_days', '5');
         </div>
     </div>
 </div>
-
-<?php include '../inc/footer.php'; ?>

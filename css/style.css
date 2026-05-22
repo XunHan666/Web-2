@@ -615,6 +615,12 @@ dialog::backdrop {
     gap: 1.5rem;
 }
 
+.form-grid-two {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
 .form-section-title {
     font-size: 0.9rem;
     text-transform: uppercase;

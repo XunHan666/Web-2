@@ -3,6 +3,7 @@
  * Loan Deletion Logic
  */
 require_once '../env/config.php';
+include '../inc/header.php';
 require_once '../Notification/Delete_notification.php';
 
 $loan_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
@@ -23,8 +24,9 @@ if (!$loan) {
 }
 
 if ($loan['status'] !== 'closed') {
-    // Should not happen via UI, but for safety
-    echo "<script>alert('Error: Only closed loans can be deleted.'); window.location.href='loans.php';</script>";
+    showAlert("Cannot delete! This transaction is still active. Please process the return first.", "error");
+    echo "<script>setTimeout(() => { window.location.href = 'loans.php'; }, 2500);</script>";
+    include '../inc/footer.php';
     exit();
 }
 
@@ -43,3 +45,6 @@ try {
     mysqli_rollback($db_connect);
     header("Location: loans.php?error=1");
 }
+
+include '../inc/footer.php';
+?>
