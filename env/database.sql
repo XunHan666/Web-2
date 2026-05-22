@@ -50,7 +50,7 @@ CREATE TABLE book_copies (
     id INT AUTO_INCREMENT PRIMARY KEY,
     book_id INT,
     barcode VARCHAR(50) UNIQUE NOT NULL, -- Barcode label on the book spine
-    status ENUM('available', 'borrowed') DEFAULT 'available',
+    status ENUM('available', 'borrowed', 'reserved') DEFAULT 'available',
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
 );
 
@@ -64,6 +64,7 @@ CREATE TABLE readers (
     dob DATE,
     gender ENUM('male', 'female', 'other') DEFAULT 'male',
     status ENUM('active', 'inactive') DEFAULT 'active', -- Account status control
+    user_id INT NULL DEFAULT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -73,7 +74,7 @@ CREATE TABLE loans (
     reader_id INT,
     borrow_date DATE DEFAULT (CURRENT_DATE),
     due_date DATE NOT NULL,
-    status ENUM('ongoing', 'partial', 'closed') DEFAULT 'ongoing',
+    status ENUM('pending', 'ongoing', 'partial', 'closed', 'rejected') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (reader_id) REFERENCES readers(id)
 );
@@ -85,7 +86,7 @@ CREATE TABLE loan_details (
     book_copy_id INT, -- Physical asset borrowed
     return_date DATE NULL, -- NULL means not yet returned
     fine_amount DECIMAL(10,2) DEFAULT 0, -- Late return or damage fine
-    status ENUM('borrowed', 'returned') DEFAULT 'borrowed',
+    status ENUM('pending', 'borrowed', 'returned', 'rejected') DEFAULT 'pending',
     FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE,
     FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
 );
@@ -113,3 +114,9 @@ CREATE TABLE settings (
     setting_value VARCHAR(255) NOT NULL,
     description TEXT
 );
+
+-- 9. Foreign Keys that depend on later tables
+ALTER TABLE readers
+    ADD CONSTRAINT fk_reader_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE SET NULL ON UPDATE CASCADE;

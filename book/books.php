@@ -63,7 +63,7 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
 
 // 2. Sau khi xử lý xong logic chuyển hướng mới include Header
 include '../inc/header.php';
-require_once '../Notification/Delete_notification.php';
+
 
 $search_term = isset($_GET['search']) ? $_GET['search'] : '';
 
@@ -85,9 +85,7 @@ $search_pattern = "%$search_term%";
 $books_query = "
     SELECT b.*, 
            (SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id) as quantity,
-           ((SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id) - 
-            (SELECT COUNT(*) FROM loan_details ld JOIN book_copies bc2 ON ld.book_copy_id = bc2.id 
-             WHERE bc2.book_id = b.id AND ld.status = 'borrowed')) as available_count,
+           (SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id AND bc.status = 'available') as available_count,
            (SELECT GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') FROM authors a JOIN book_author ba ON a.id = ba.author_id WHERE ba.book_id = b.id) as author_names,
            (SELECT GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') FROM categories c JOIN book_category bc ON c.id = bc.category_id WHERE bc.book_id = b.id) as category_names
     FROM books b 
@@ -206,307 +204,23 @@ $books_result = mysqli_stmt_get_result($stmt);
     </div>
 <?php endif; ?>
 
-<style>
-:root {
-    --shopee-orange: #ee4d2d;
-    --card-bg: #ffffff;
-    --text-main: #212121;
-    --text-muted: #757575;
-}
-
-/* --- Toolbar UI Modifications --- */
-.custom-toolbar {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    margin-bottom: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.search-section {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.search-form {
-    width: 100%;
-    max-width: 650px;
-}
-
-.search-input-wrapper {
-    display: flex;
-    border: 2px solid var(--shopee-orange);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.search-input-field {
-    flex: 1;
-    border: none;
-    padding: 12px 16px;
-    font-size: 0.95rem;
-    outline: none;
-    color: #333;
-}
-
-.search-submit-btn {
-    background: var(--shopee-orange);
-    color: white;
-    border: none;
-    padding: 0 30px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.search-submit-btn:hover {
-    background: #d73f22;
-}
-
-.action-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 15px;
-}
-
-.action-btn-primary, .action-btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    padding: 0 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 4px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-sizing: border-box;
-}
-
-.action-btn-primary {
-    background: #0284c7;
-    color: white;
-    border: none;
-}
-.action-btn-primary:hover {
-    background: #0369a1;
-}
-
-.action-btn-secondary {
-    background: #e0f2fe;
-    color: #0284c7;
-    border: none;
-}
-.action-btn-secondary:hover {
-    background: #bae6fd;
-}
-
-/* --- Shopee Grid Core Layout --- */
-.shopee-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 2rem;
-}
-
-.shopee-card {
-    background: var(--card-bg);
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-.shopee-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-color: var(--shopee-orange);
-}
-
-.card-img-wrapper {
-    position: relative;
-    width: 100%;
-    padding-top: 133.33%; /* Forced 3:4 Book Ratio */
-    background: #f5f5f5;
-}
-
-.card-img-wrapper img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.card-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 2px 6px;
-    font-size: 0.75rem;
-    border-radius: 2px;
-    color: white;
-    font-weight: bold;
-    background: rgba(0,0,0,0.6);
-}
-
-.card-info {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.card-title {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-main);
-    text-decoration: none;
-    line-height: 1.3rem;
-    height: 2.6rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 6px;
-}
-.card-title:hover {
-    color: var(--shopee-orange);
-}
-
-.card-author, .card-category {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 4px;
-}
-
-.card-category {
-    background: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 2px;
-    align-self: flex-start;
-    max-width: 100%;
-    color: #475569;
-}
-
-.card-status-text {
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-top: 10px;
-    margin-bottom: 8px;
-}
-.card-status-text.returned { color: #10b981; }
-.card-status-text.borrowing { color: #f59e0b; }
-.card-status-text.overdue { color: #ef4444; }
-
-.card-qty-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: auto;
-    border-top: 1px dashed #f0f0f0;
-    padding-top: 8px;
-}
-
-.qty-display {
-    font-weight: 700;
-    color: var(--text-main);
-    font-size: 1rem;
-    min-width: 20px;
-    text-align: center;
-}
-
-.btn-qty { 
-    width: 26px; height: 26px; border-radius: 4px; border: 1px solid #ddd; 
-    background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: var(--text-main); transition: all 0.2s;
-}
-.btn-qty:hover { 
-    background: var(--shopee-orange); color: white; border-color: var(--shopee-orange); 
-}
-
-.card-footer-actions {
-    display: flex;
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
-    transform: translateY(100%);
-    transition: transform 0.2s ease;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-}
-
-.shopee-card:hover .card-footer-actions {
-    transform: translateY(0);
-}
-
-.shopee-card:hover .card-info {
-    padding-bottom: 40px; 
-}
-
-.action-btn {
-    flex: 1;
-    text-align: center;
-    padding: 8px 0;
-    font-size: 0.8rem;
-    text-decoration: none;
-    font-weight: 500;
-}
-.action-btn.view { color: #64748b; }
-.action-btn.edit { color: #0ea5e9; border-left: 1px solid #eee; border-right: 1px solid #eee; }
-.action-btn.delete { color: #ef4444; }
-.action-btn:hover { background: #f1f5f9; }
-
-/* Responsive Adjustments */
-@media (max-width: 600px) {
-    .action-section {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .action-section form, .action-btn-primary {
-        width: 100%;
-    }
-    .action-btn-secondary, .action-btn-primary {
-        width: 100%;
-    }
-}
-</style>
 
 <script>
 function changeCopies(id, delta, title = '', currentCount = 0) {
     if (delta < 0 && currentCount === 1) {
         Swal.fire({
             title: 'Remove Last Copy?',
-            text: `You are removing the last copy of '${title}'. This will delete the book record from the catalog entirely. Proceed?`,
+            text: `Removing the last copy of '${title}' will delete the book entirely.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
-            confirmButtonText: 'Yes, delete book'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = `books.php?update_copies=${id}&delta=${delta}`;
-            }
-        });
+            confirmButtonText: 'Yes, delete'
+        }).then(r => { if (r.isConfirmed) window.location.href = `books.php?update_copies=${id}&delta=${delta}`; });
     } else {
         window.location.href = `books.php?update_copies=${id}&delta=${delta}`;
     }
 }
+</script>
 
 <?php include '../inc/footer.php'; ?>
+

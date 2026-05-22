@@ -232,7 +232,8 @@ INSERT INTO loan_details (id, loan_id, book_copy_id, return_date, fine_amount, s
 -- 11. Insert Roles & Users
 INSERT INTO roles (id, name) VALUES
 (1, 'admin'),
-(2, 'librarian');
+(2, 'librarian'),
+(3, 'reader');
 
 INSERT INTO users (id, username, password, full_name, role_id, status, created_at) VALUES
 (1, 'admin', '$2y$10$t8PFiYmvgfYNnctlQAdiM.wTQrFfbrqVRxM0QKZASt9A7yAq3IF5m', 'Administrator', 1, 'active', '2026-04-26 10:04:05'),

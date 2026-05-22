@@ -4,7 +4,7 @@
  */
 require_once '../env/config.php';
 include '../inc/header.php';
-require_once '../Notification/Delete_notification.php';
+
 
 $loan_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 

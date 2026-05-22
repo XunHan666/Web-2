@@ -2,16 +2,52 @@
 /**
  * Global Header and Session Management
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Authentication and Security Check
 $current_page = basename($_SERVER['PHP_SELF']);
-$public_pages = ['login.php', 'register.php'];
+$public_pages = ['login.php', 'register.php', 'reader_register.php', 'forgot_password.php'];
 
 // If user is not logged in and current page is not public, redirect to login
 if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
     header("Location: " . BASE_URL . "authen/login.php");
     exit();
+}
+
+$is_reader_area = (strpos($_SERVER['PHP_SELF'], '/reader/') !== false);
+
+if (isset($_SESSION['role_id'])) {
+    if ($_SESSION['role_id'] == 3) {
+        if (!$is_reader_area) {
+            header("Location: " . BASE_URL . "reader/dashboard.php");
+            exit();
+        }
+        
+        // Fetch reader info globally for Reader Portal
+        global $reader, $db_connect;
+        if (isset($db_connect)) {
+            $stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE user_id = ?");
+            mysqli_stmt_bind_param($stmt, 'i', $_SESSION['user_id']);
+            mysqli_stmt_execute($stmt);
+            $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+            if (!$reader) { session_destroy(); header('Location: ' . BASE_URL . 'authen/login.php'); exit(); }
+        }
+    } else {
+        if ($is_reader_area) {
+            header("Location: " . BASE_URL . "index.php");
+            exit();
+        }
+        
+        // Admin/Staff: Get pending requests count for badge
+        global $db_connect, $pending_count;
+        $pending_count = 0;
+        if (isset($db_connect)) {
+            $p_res = mysqli_query($db_connect, "SELECT COUNT(*) FROM loans WHERE status = 'pending'");
+            if ($p_res) $pending_count = mysqli_fetch_array($p_res)[0];
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -27,201 +63,41 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <style>
-        /* Disable SwAl2 animations for a snappier minimalist feel */
-        .swal2-popup, .swal2-icon, .swal2-icon * {
-            animation: none !important;
-            transition: none !important;
-        }
-        
-        /* Layout structure for Vertical Sidebar */
-        body {
-            display: flex;
-            min-height: 100vh;
-            background-color: var(--bg-color);
-        }
-
-        /* Vertical Sidebar Styling - Ép buộc nhận màu nền nhẹ nhàng */
-        header {
-            width: 260px;
-            background: var(--primary-light) !important; /* Đổi hẳn sang màu nền nhẹ */
-            border-right: 1px solid var(--border-color);
-            border-bottom: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            height: 100vh;
-            z-index: 100;
-            padding: 2rem 0;
-        }
-
-        .nav-container {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: stretch;
-            padding: 0 1.5rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color) !important;
-            text-decoration: none;
-            margin-bottom: 2.5rem;
-            padding-left: 0.5rem;
-            display: block;
-        }
-
-        nav {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        nav ul {
-            display: flex;
-            flex-direction: column;
-            list-style: none;
-            gap: 0.5rem;
-        }
-
-        nav ul li a {
-            display: block;
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            font-size: 0.95rem;
-            padding: 0.75rem 1rem 0.75rem 1.75rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        /* Khi hover hoặc active: Nút nổi hẳn lên trên nền sidebar */
-        nav ul li a:hover, nav ul li a.active {
-            background-color: var(--card-bg) !important; 
-            color: var(--primary-color) !important;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(30, 70, 70, 0.08);
-        }
-
-        /* Bottom Section of Sidebar (Account Info) */
-        .nav-right {
-            margin-top: auto;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        /* Account Dropdown Styling adjusted for Sidebar */
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.8rem;
-            background: var(--card-bg) !important;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-        
-        .user-info:hover {
-            border-color: var(--primary-color);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--primary-color) !important;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.875rem;
-            flex-shrink: 0;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-            overflow: hidden;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-color);
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-
-        .user-role {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-top: 2px;
-        }
-
-        #accountDropdown {
-            display: none;
-            position: absolute;
-            bottom: 110%;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 -4px 20px rgba(30, 37, 43, 0.08);
-            border-radius: 10px;
-            z-index: 1000;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        #accountDropdown a {
-            display: block;
-            padding: 0.75rem 1rem;
-            color: var(--text-color);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        #accountDropdown a:hover {
-            background: var(--primary-light);
-            color: var(--primary-color);
-        }
-
-        /* Adjust Main Content Container to push it right of the Sidebar */
-        .container {
-            flex-grow: 1;
-            margin-left: 260px;
-            max-width: calc(100% - 260px);
-            padding: 2.5rem;
-        }
-    </style>
 </head>
+
 <body>
     <header>
         <div class="nav-container">
-            <a href="<?php echo BASE_URL; ?>index.php" class="logo">LibraryOS</a>
+            <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
+                <a href="<?php echo BASE_URL; ?>reader/dashboard.php" class="logo">LibraryOS</a>
+                <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Reader Portal</span>
+            <?php else: ?>
+                <a href="<?php echo BASE_URL; ?>index.php" class="logo">LibraryOS</a>
+            <?php endif; ?>
             <nav>
                 <ul>
+                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
+                    <!-- ===== READER PORTAL MENU ===== -->
+                    <li><a href="<?php echo BASE_URL; ?>reader/dashboard.php" class="<?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>">My Dashboard</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader/book.php" class="<?php echo ($current_page == 'book.php') ? 'active' : ''; ?>">Browse Books</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader/my_loans.php" class="<?php echo ($current_page == 'my_loans.php') ? 'active' : ''; ?>">My Loans</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader/profile.php" class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">My Profile</a></li>
+                    <?php else: ?>
+                    <!-- ===== STAFF / ADMIN MENU ===== -->
                     <li><a href="<?php echo BASE_URL; ?>index.php" class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Dashboard</a></li>
                     <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>reader/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers</a></li>
                     <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans</a></li>
-                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): // Admin Features Only ?>
+                    <li><a href="<?php echo BASE_URL; ?>loan/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
+                        Requests
+                        <?php if(isset($pending_count) && $pending_count > 0): ?>
+                            <span style="background:var(--danger);color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:4px;"><?php echo $pending_count; ?></span>
+                        <?php endif; ?>
+                    </a></li>
+                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): // Admin only ?>
                         <li><a href="<?php echo BASE_URL; ?>user/users.php" class="<?php echo ($current_page == 'users.php') ? 'active' : ''; ?>">User Management</a></li>
                         <li><a href="<?php echo BASE_URL; ?>system/settings.php" class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">Settings</a></li>
+                    <?php endif; ?>
                     <?php endif; ?>
                 </ul>
                 
@@ -236,7 +112,11 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
                                 <span class="user-role"><?php echo $_SESSION['role_name']; ?></span>
                             </div>
                             <div id="accountDropdown">
-                                <a href="<?php echo BASE_URL; ?>user/profile.php">My Profile</a>
+                                <?php if ($_SESSION['role_id'] == 3): ?>
+                                    <a href="<?php echo BASE_URL; ?>reader/profile.php">My Profile</a>
+                                <?php else: ?>
+                                    <a href="<?php echo BASE_URL; ?>user/profile.php">My Profile</a>
+                                <?php endif; ?>
                                 <a href="<?php echo BASE_URL; ?>authen/logout.php" style="color: var(--danger); border-top: 1px solid var(--border-color);">Logout</a>
                             </div>
                         </div>
@@ -295,7 +175,5 @@ if (!function_exists('showAlert')) {
 }
 ?>
 <?php 
-// Include Global Deletion & Return Notification logic
-include_once __DIR__ . '/../Notification/Delete_notification.php';
-include_once __DIR__ . '/../Notification/Return_Notification.php';
-?>
+include_once __DIR__ . '/../Notification/views/notif_templates.php';
+?>

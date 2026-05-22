@@ -4,7 +4,7 @@
  */
 require_once '../env/config.php';
 include '../inc/header.php';
-require_once '../Notification/Delete_notification.php';
+
 
 // Initialization
 $search_term = isset($_GET['search']) ? $_GET['search'] : '';

@@ -19,9 +19,7 @@ $detail_query = "
            (SELECT GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') FROM book_author ba JOIN authors a ON ba.author_id = a.id WHERE ba.book_id = b.id) as author_names,
            (SELECT GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') FROM book_category bc JOIN categories c ON bc.category_id = c.id WHERE bc.book_id = b.id) as category_names,
            (SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id) as total_copies,
-           ((SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id) - 
-            (SELECT COUNT(*) FROM loan_details ld JOIN book_copies bc2 ON ld.book_copy_id = bc2.id 
-             WHERE bc2.book_id = b.id AND ld.status = 'borrowed')) as available_copies
+           (SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id AND bc.status = 'available') as available_copies
     FROM books b
     LEFT JOIN publishers p ON b.publisher_id = p.id
     WHERE b.id = $book_id

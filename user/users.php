@@ -4,7 +4,7 @@
  */
 require_once '../env/config.php';
 include '../inc/header.php';
-require_once '../Notification/Delete_notification.php';
+
 
 /**
  * Authorization: Admin only

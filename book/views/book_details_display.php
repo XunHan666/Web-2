@@ -53,15 +53,31 @@
                 </p>
             </div>
 
-            <!-- Management Actions -->
+            <!-- Actions (thay đổi theo role) -->
             <div style="margin-top: 3rem; display: flex; gap: 1rem; align-items: center;">
-                <?php if ($book_data['available_copies'] > 0): ?>
-                    <a href="../loan/borrow.php" class="btn btn-primary" style="padding: 1rem 2.5rem; border-radius: 10px;">Create Loan Transaction</a>
+                <?php if (!empty($is_reader_view)): ?>
+                    <!-- Reader: chỉ thấy nút Borrow -->
+                    <?php if ($book_data['available_copies'] > 0): ?>
+                        <form action="<?php echo BASE_URL; ?>reader/request_borrow.php" method="POST">
+                            <input type="hidden" name="book_id" value="<?php echo $book_data['id']; ?>">
+                            <button type="submit" class="btn btn-primary" style="padding:1rem 2.5rem; border-radius:10px;"
+                                    onclick="return confirm('Confirm borrow: <?php echo addslashes($book_data['title']); ?>?')">
+                                Borrow this Book
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <button class="btn" style="background:#e2e8f0;color:#94a3b8;cursor:not-allowed;padding:1rem 2.5rem;border-radius:10px;" disabled>All Copies Borrowed</button>
+                    <?php endif; ?>
+                    <a href="<?php echo BASE_URL; ?>reader/books.php" class="btn" style="border:1px solid var(--border-color);padding:1rem 2rem;border-radius:10px;background:white;color:#475569;">← Back</a>
                 <?php else: ?>
-                    <button class="btn" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; padding: 1rem 2.5rem; border-radius: 10px;" disabled>All Copies are Borrowed</button>
+                    <!-- Staff/Admin: Loan + Edit -->
+                    <?php if ($book_data['available_copies'] > 0): ?>
+                        <a href="../loan/borrow.php" class="btn btn-primary" style="padding:1rem 2.5rem;border-radius:10px;">Create Loan Transaction</a>
+                    <?php else: ?>
+                        <button class="btn" style="background:#e2e8f0;color:#94a3b8;cursor:not-allowed;padding:1rem 2.5rem;border-radius:10px;" disabled>All Copies are Borrowed</button>
+                    <?php endif; ?>
+                    <a href="book_add.php?id=<?php echo $book_data['id']; ?>" class="btn" style="border:1px solid var(--border-color);padding:1rem 2.5rem;border-radius:10px;background:white;color:#475569;">Modify Records</a>
                 <?php endif; ?>
-                
-                <a href="book_add.php?id=<?php echo $book_data['id']; ?>" class="btn" style="border: 1px solid var(--border-color); padding: 1rem 2.5rem; border-radius: 10px; background: white; color: #475569;">Modify Records</a>
             </div>
             
             <p style="margin-top: 2rem; color: #cbd5e1; font-size: 0.8rem; border-top: 1px solid #f1f5f9; padding-top: 1rem;">

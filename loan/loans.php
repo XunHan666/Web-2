@@ -12,7 +12,7 @@ $current_date = date('Y-m-d');
 /**
  * Data Acquisition with Filter Logic
  */
-$where_clause = "WHERE 1=1";
+$where_clause = "WHERE l.status NOT IN ('pending', 'rejected')";
 
 if ($filter == 'pending') {
     $where_clause .= " AND l.status IN ('ongoing', 'partial')";
