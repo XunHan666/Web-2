@@ -24,7 +24,7 @@ if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=1.4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
@@ -288,8 +288,8 @@ function showAlert($message, $type = 'success') {
                 showClass: { popup: '', backdrop: '' },
                 hideClass: { popup: '', backdrop: '' }
             });
-        });
-    </script>";
+        </script>";
+    }
 }
 ?>
 <?php 

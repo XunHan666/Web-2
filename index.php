@@ -1,19 +1,16 @@
 <?php
 /**
- * System Management Dashboard
- * Provides a high-level overview of library inventory, circulation metrics, and quick action shortcuts.
+ * Dashboard - Controller
  */
 require_once 'env/config.php';
 include 'inc/header.php';
 
-/**
- * Business Intelligence: Key Performance Indicators (KPIs)
- */
+// Statistical Data
+$total_inventory_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies"))[0];
+$ready_for_loan_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies WHERE status = 'available'"))[0];
+$total_registered_readers = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM readers"))[0];
+$pending_circulation_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM loans WHERE status IN ('ongoing', 'partial')"))[0];
 
-// 1. Total Physical Inventory (Aggregate count of all versions/copies)
-$inventory_query = mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies");
-$inventory_data = mysqli_fetch_array($inventory_query);
-$total_inventory_count = $inventory_data[0];
 
 // 2. Shelf Availability (Items currently present and ready for lending)
 $available_query = mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies WHERE status = 'available'");
@@ -37,6 +34,9 @@ $staff_display_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : '
 $staff_role_label = isset($_SESSION['role_name']) ? $_SESSION['role_name'] : 'Staff';
 $time_of_day_greeting = "Good " . (date('H') < 12 ? 'Morning' : (date('H') < 18 ? 'Afternoon' : 'Evening')) . ", " . $staff_display_name . "!";
 $role_context_banner = "Operational Role: " . ucfirst($staff_role_label);
+
+include 'views/dashboard_display.php';
+include 'inc/footer.php';
 ?>
 
 <div class="dashboard-greeting" style="margin-bottom: 3rem;">

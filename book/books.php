@@ -1,18 +1,10 @@
-<?php
+s<?php
 /**
- * Books Inventory Management
- * Displays a searchable list of books and basic statistics.
+ * Book Inventory Directory - Controller (Fixed Header Issue & Image Logic)
  */
 require_once '../env/config.php';
-include '../inc/header.php';
 
-// Initialization
-$search_term = isset($_GET['search']) ? $_GET['search'] : '';
-
-
-/**
- * Handle Copy Quantity Update
- */
+// 1. Xử lý logic TRƯỚC khi gửi bất kỳ nội dung HTML nào (Để tránh lỗi Headers already sent)
 if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
     $book_id = (int)$_GET['update_copies'];
     $delta = (int)$_GET['delta'];
@@ -65,37 +57,18 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
             }
         }
     }
+    header("Location: books.php" . (!empty($_GET['search']) ? "?search=".urlencode($_GET['search']) : ""));
+    exit();
 }
 
-/**
- * Handle Inventory Synchronization (Heal Logic)
- */
-if (isset($_POST['sync_inventory'])) {
-    mysqli_begin_transaction($db_connect);
-    try {
-        // Reset all copies to available
-        mysqli_query($db_connect, "UPDATE book_copies SET status = 'available'");
-        
-        // Sync with active loans
-        $sync_sql = "
-            UPDATE book_copies bc
-            JOIN loan_details ld ON bc.id = ld.book_copy_id
-            SET bc.status = 'borrowed'
-            WHERE ld.status = 'borrowed'
-        ";
-        mysqli_query($db_connect, $sync_sql);
-        
-        mysqli_commit($db_connect);
-        showAlert("Inventory status synchronized with active loans successfully.");
-    } catch (Exception $e) {
-        mysqli_rollback($db_connect);
-        showAlert("Sync failed: " . $e->getMessage(), "error");
-    }
-}
+// 2. Sau khi xử lý xong logic chuyển hướng mới include Header
+include '../inc/header.php';
+require_once '../Notification/Delete_notification.php';
 
+$search_term = isset($_GET['search']) ? $_GET['search'] : '';
 
 /**
- * Statistics Dashboard Calculations
+ * Global Statistics
  */
 $total_copies_res = mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies");
 $total_copies_count = mysqli_fetch_array($total_copies_res)[0];
@@ -106,37 +79,37 @@ $borrowed_copies_count = mysqli_fetch_array($borrowed_copies_res)[0];
 $available_copies_count = $total_copies_count - $borrowed_copies_count;
 
 /**
- * Fetch Books with Search Criteria
+ * Main Data Acquisition with Image Logic
  */
 $search_pattern = "%$search_term%";
-$main_query = "
-    SELECT b.id, b.title, b.pub_year, b.cover_image, p.name as publisher_name,
-           GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') as author_names,
-           GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') as category_names,
+$books_query = "
+    SELECT b.*, 
            (SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id) as quantity,
            ((SELECT COUNT(*) FROM book_copies bc WHERE bc.book_id = b.id) - 
             (SELECT COUNT(*) FROM loan_details ld JOIN book_copies bc2 ON ld.book_copy_id = bc2.id 
-             WHERE bc2.book_id = b.id AND ld.status = 'borrowed')) as available_count
-    FROM books b
-    LEFT JOIN publishers p ON b.publisher_id = p.id
+             WHERE bc2.book_id = b.id AND ld.status = 'borrowed')) as available_count,
+           (SELECT GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') FROM authors a JOIN book_author ba ON a.id = ba.author_id WHERE ba.book_id = b.id) as author_names,
+           (SELECT GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') FROM categories c JOIN book_category bc ON c.id = bc.category_id WHERE bc.book_id = b.id) as category_names
+    FROM books b 
     LEFT JOIN book_author ba ON b.id = ba.book_id
     LEFT JOIN authors a ON ba.author_id = a.id
     LEFT JOIN book_category bc ON b.id = bc.book_id
     LEFT JOIN categories c ON bc.category_id = c.id
     WHERE b.title LIKE ? OR a.name LIKE ? OR c.name LIKE ?
     GROUP BY b.id
-    ORDER BY b.id ASC
+    ORDER BY b.id DESC
 ";
 
-$search_stmt = mysqli_prepare($db_connect, $main_query);
-mysqli_stmt_bind_param($search_stmt, "sss", $search_pattern, $search_pattern, $search_pattern);
-mysqli_stmt_execute($search_stmt);
-$books_result = mysqli_stmt_get_result($search_stmt);
-?>
+$stmt = mysqli_prepare($db_connect, $books_query);
+mysqli_stmt_bind_param($stmt, "sss", $search_pattern, $search_pattern, $search_pattern);
+mysqli_stmt_execute($stmt);
+$books_result = mysqli_stmt_get_result($stmt);
 
-<div class="breadcrumb" style="margin-bottom: 1.5rem; color: #64748b; font-size: 0.9rem;">
-    Home / Book Management / <strong style="color: var(--text-color);">Book Inventory</strong>
-</div>
+// Chuyển kết quả sang mảng để xử lý logic ảnh bìa thông minh
+$books_list = [];
+while ($book = mysqli_fetch_assoc($books_result)) {
+    $title = $book['title'];
+    $display_image = "https://placehold.co/100x150/007bff/white?text=" . urlencode(substr($title, 0, 20));
 
 <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
     <div class="stat-card" style="padding: 1.5rem; border-left-color: var(--primary-color);">
@@ -535,11 +508,10 @@ function changeCopies(id, delta, title = '', currentCount = 0) {
             if (result.isConfirmed) {
                 window.location.href = `books.php?update_copies=${id}&delta=${delta}`;
             }
-        });
-        return;
+        }
     }
-    window.location.href = `books.php?update_copies=${id}&delta=${delta}`;
+    $book['display_image'] = $display_image;
+    $books_list[] = $book;
 }
-</script>
 
 <?php include '../inc/footer.php'; ?>

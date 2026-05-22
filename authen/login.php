@@ -1,11 +1,10 @@
 <?php
 /**
- * User Login and Session Initiation
+ * Login - Controller
  */
 require_once '../env/config.php';
 session_start();
 
-// Redirect to dashboard if the user is already logged in
 if (isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
@@ -13,11 +12,9 @@ if (isset($_SESSION['user_id'])) {
 
 $error_message = '';
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize user input to prevent basic SQL injection
-    $input_username = mysqli_real_escape_string($db_connect, $_POST['username']);
-    $input_password = $_POST['password'];
+    $username = mysqli_real_escape_string($db_connect, $_POST['username']);
+    $password = $_POST['password'];
 
     // Query to find user and their role name via a JOIN
     $sql_query = "SELECT u.*, r.name as role_name 
@@ -27,28 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $query_result = mysqli_query($db_connect, $sql_query);
 
-    // Check if user exists
-    if ($query_result && mysqli_num_rows($query_result) > 0) {
-        $user_data = mysqli_fetch_assoc($query_result);
-        
-        // Verify the entered password against the hashed password in database
-        if (password_verify($input_password, $user_data['password'])) {
-            // Setup Session variables for the authenticated user
-            $_SESSION['user_id'] = $user_data['id'];
-            $_SESSION['username'] = $user_data['username'];
-            $_SESSION['full_name'] = $user_data['full_name'];
-            $_SESSION['role_id'] = $user_data['role_id'];
-            $_SESSION['role_name'] = $user_data['role_name'];
-
-            // Successful login, redirect to Dashboard
+    if ($res && mysqli_num_rows($res) > 0) {
+        $user = mysqli_fetch_assoc($res);
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['role_id'] = $user['role_id'];
+            $_SESSION['role_name'] = $user['role_name'];
             header("Location: ../index.php");
             exit();
-        } else {
-            $error_message = 'Invalid username or password.';
         }
-    } else {
-        $error_message = 'Invalid username or password.';
     }
+    $error_message = 'Invalid credentials.';
 }
 ?>
 <!DOCTYPE html>
