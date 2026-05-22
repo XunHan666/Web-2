@@ -14,6 +14,17 @@ if ($_SESSION['role_id'] != 1) {
 $submission_error = '';
 $user_data = [];
 
+if (isset($_GET['id'])) {
+    $user_id = (int)$_GET['id'];
+    $res = mysqli_query($db_connect, "SELECT * FROM users WHERE id = $user_id");
+    if ($row = mysqli_fetch_assoc($res)) {
+        $user_data = $row;
+    } else {
+        header("Location: users.php");
+        exit();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($db_connect, trim($_POST['username']));
     $full_name = mysqli_real_escape_string($db_connect, trim($_POST['full_name']));
@@ -23,11 +34,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($plain_password) || empty($full_name)) {
         $submission_error = "Fields missing.";
     } else {
-        $hash = password_hash($plain_password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (username, password, full_name, role_id, status) VALUES ('$username', '$hash', '$full_name', $role_id, 'active')";
-        if (mysqli_query($db_connect, $sql)) {
-            showAlert("Account created.");
-            echo "<script>setTimeout(() => { window.location.href = 'users.php'; }, 2000);</script>";
+        if (isset($user_id) && $user_id == 1) {
+            $submission_error = "Cannot modify the primary Admin account from this panel.";
+        } else {
+            $hash = password_hash($plain_password, PASSWORD_DEFAULT);
+            if (isset($user_id)) {
+                $sql = "UPDATE users SET username='$username', full_name='$full_name', role_id=$role_id";
+                if (!empty($plain_password)) {
+                    $sql .= ", password='$hash'";
+                }
+                $sql .= " WHERE id=$user_id";
+            } else {
+                $sql = "INSERT INTO users (username, password, full_name, role_id, status) VALUES ('$username', '$hash', '$full_name', $role_id, 'active')";
+            }
+            
+            if (mysqli_query($db_connect, $sql)) {
+                showAlert(isset($user_id) ? "Account updated." : "Account created.");
+                echo "<script>setTimeout(() => { window.location.href = 'users.php'; }, 2000);</script>";
+            }
         }
     }
 }
