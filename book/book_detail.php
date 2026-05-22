@@ -50,35 +50,11 @@ if (!$book_data) {
 
 // Prepare Cover Image logic
 $book_title = $book_data['title'];
-$display_image = "https://placehold.co/400x600/007bff/white?text=" . urlencode($book_title); 
 
 if (!empty($book_data['cover_image']) && file_exists("../" . $book_data['cover_image'])) {
     $display_image = "../" . $book_data['cover_image'];
 } else {
-    // Enhanced auto-matching logic for famous titles and special formats
-    $clean_title = strtolower(trim($book_title));
-    $title_no_colon = str_replace(':', '', $clean_title);
-    $title_colon_to_space = str_replace(':', ' ', $clean_title);
-    $title_no_subtitle = strtolower(trim(explode(':', $book_title)[0]));
-    
-    $search_filenames = [
-        $clean_title . ".jpg",
-        str_replace(' ', '_', $clean_title) . ".jpg",
-        $title_no_colon . ".jpg",
-        str_replace('  ', ' ', $title_colon_to_space) . ".jpg",
-        str_replace(' ', '_', str_replace('  ', ' ', $title_colon_to_space)) . ".jpg",
-        str_replace('&', 'and', $clean_title) . ".jpg",
-        str_replace(' ', '_', str_replace('&', 'and', $clean_title)) . ".jpg",
-        $title_no_subtitle . ".jpg",
-        str_replace(' ', '_', $title_no_subtitle) . ".jpg"
-    ];
-    
-    foreach ($search_filenames as $filename) {
-        if (file_exists("../img-web2/" . $filename)) {
-            $display_image = "../img-web2/" . $filename;
-            break;
-        }
-    }
+    $display_image = "https://placehold.co/400x600/1e4646/white?text=" . urlencode($book_title);
 }
 ?>
 

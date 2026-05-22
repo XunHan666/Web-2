@@ -17,13 +17,22 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
     $book_id = (int)$_GET['update_copies'];
     $delta = (int)$_GET['delta'];
 
+   // MỚI (ĐÃ FIX LỖI DUPLICATE BARCODE)
     if ($delta > 0) {
-        // Add copies
+        // Thêm bản sao mới kèm mã Barcode sinh tự động duy nhất
         for ($i = 0; $i < $delta; $i++) {
-            mysqli_query($db_connect, "INSERT INTO book_copies (book_id, status) VALUES ($book_id, 'available')");
+            // Sinh mã ngẫu nhiên dạng: B[ID_SÁCH]_[Thời_Gian_Hiện_Tại][Số_Thứ_Tự_Ngẫu_Nhiên]
+            // Ví dụ: B5_171615432189
+            $auto_barcode = "B" . $book_id . "_" . time() . rand(10, 99);
+            
+            $insert_copy_query = "INSERT INTO book_copies (book_id, barcode, status) 
+                                VALUES ($book_id, '$auto_barcode', 'available')";
+            
+            mysqli_query($db_connect, $insert_copy_query);
         }
         showAlert("Added $delta copy(ies) successfully.");
-    } elseif ($delta < 0) {
+    }
+    elseif ($delta < 0) {
         $abs_delta = abs($delta);
         
         // Check available copies
@@ -129,7 +138,6 @@ $books_result = mysqli_stmt_get_result($search_stmt);
     Home / Book Management / <strong style="color: var(--text-color);">Book Inventory</strong>
 </div>
 
-<!-- Statistics Cards -->
 <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
     <div class="stat-card" style="padding: 1.5rem; border-left-color: var(--primary-color);">
         <h3 style="margin-bottom: 0;">Total Inventory</h3>
@@ -145,147 +153,372 @@ $books_result = mysqli_stmt_get_result($search_stmt);
     </div>
 </div>
 
-<!-- Toolbar: Search and Action Buttons -->
-<div class="toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-    <form action="" method="GET" style="display: flex; gap: 0.5rem; flex: 1; min-width: 300px; max-width: 500px;">
-        <input type="text" name="search" placeholder="Search title, author, or category..." class="search-input" value="<?php echo htmlspecialchars($search_term); ?>" style="width: 250px;">
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
+<div class="custom-toolbar">
+    <div class="search-section">
+        <form action="" method="GET" class="search-form">
+            <div class="search-input-wrapper">
+                <input type="text" name="search" placeholder="Search by title, author, or category..." class="search-input-field" value="<?php echo htmlspecialchars($search_term); ?>">
+                <button type="submit" class="search-submit-btn">Search</button>
+            </div>
+        </form>
+    </div>
     
-    <form action="" method="POST" style="display: inline-block;">
-        <button type="submit" name="sync_inventory" class="btn" style="background: #e0f2fe; color: #0284c7; font-weight: 600;">
-            Sync Inventory
-        </button>
-    </form>
-    
-    <a href="book_add.php" class="btn btn-primary">
-        + Add New Book
-    </a>
+    <div class="action-section">
+        <form action="" method="POST" style="margin: 0;">
+            <button type="submit" name="sync_inventory" class="action-btn-secondary">
+                Sync Inventory
+            </button>
+        </form>
+        
+        <a href="book_add.php" class="action-btn-primary">
+            + Add New Book
+        </a>
+    </div>
 </div>
 
-<!-- Books Table -->
-<div class="table-container">
-    <table class="datatable">
-        <thead>
-            <tr>
-                <th width="80">Cover</th>
-                <th style="text-align: left;">Book Details</th>
-                <th style="text-align: left;">Category</th>
-                <th>Pub. Year</th>
-                <th style="text-align: center;">Copies</th>
-                <th>Inventory Status</th>
-                <th style="text-align: center;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (mysqli_num_rows($books_result) == 0): ?>
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 3rem; color: #64748b;">
-                        No books found matching "<strong><?php echo htmlspecialchars($search_term); ?></strong>".
-                    </td>
-                </tr>
-            <?php else: ?>
-                <?php while ($book = mysqli_fetch_assoc($books_result)): 
-                    // Handle Cover Image logic
-                    $book_title = $book['title'];
-                    // Increase truncation to 40 characters for better placeholder readability
-                    $display_image = "https://placehold.co/100x150/007bff/white?text=" . urlencode(substr($book_title, 0, 40));
+<?php if (mysqli_num_rows($books_result) == 0): ?>
+    <div style="text-align: center; padding: 5rem 1rem; color: #64748b; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <img src="https://placehold.co/120x120/f1f5f9/64748b?text=No+Data" alt="No data" style="margin-bottom: 1rem; border-radius: 50%;">
+        <p style="font-size: 1.1rem; margin: 0;">No books found matching "<strong><?php echo htmlspecialchars($search_term); ?></strong>".</p>
+    </div>
+<?php else: ?>
+    <div class="shopee-grid">
+        <?php while ($book = mysqli_fetch_assoc($books_result)): 
+            $book_title = $book['title'];
+            if (!empty($book['cover_image']) && file_exists("../" . $book['cover_image'])) {
+                $display_image = "../" . $book['cover_image'];
+            } else {
+                $display_image = "https://placehold.co/100x150/1e4646/white?text=" . urlencode(substr($book_title, 0, 40));
+            }
+            
+            // Badge translation logic
+            $status_badge_class = 'returned'; 
+            $status_text = 'Available: ' . $book['available_count'] . '/' . $book['quantity'];
+            if ($book['available_count'] == 0) {
+                $status_badge_class = 'overdue'; 
+                $status_text = 'Out of Stock: 0/' . $book['quantity'];
+            } elseif ($book['available_count'] < $book['quantity']) {
+                $status_badge_class = 'borrowing'; 
+            }
+        ?>
+            <div class="shopee-card">
+                <div class="card-img-wrapper">
+                    <img src="<?php echo $display_image; ?>" alt="Cover" loading="lazy">
+                    <span class="card-badge">
+                        <?php echo $book['pub_year']; ?>
+                    </span>
+                </div>
+                
+                <div class="card-info">
+                    <a href="book_detail.php?id=<?php echo $book['id']; ?>" class="card-title" title="<?php echo htmlspecialchars($book['title']); ?>">
+                        <?php echo htmlspecialchars($book['title']); ?>
+                    </a>
                     
-                    if (!empty($book['cover_image']) && file_exists("../" . $book['cover_image'])) {
-                        $display_image = "../" . $book['cover_image'];
-                    } else {
-                        // Enhanced auto-matching logic for famous titles and special formats
-                        $clean_title = strtolower(trim($book_title));
-                        $title_no_colon = str_replace(':', '', $clean_title);
-                        $title_colon_to_space = str_replace(':', ' ', $clean_title);
-                        $title_no_subtitle = strtolower(trim(explode(':', $book_title)[0]));
-                        
-                        $search_filenames = [
-                            $clean_title . ".jpg",
-                            str_replace(' ', '_', $clean_title) . ".jpg",
-                            $title_no_colon . ".jpg",
-                            str_replace('  ', ' ', $title_colon_to_space) . ".jpg",
-                            str_replace(' ', '_', str_replace('  ', ' ', $title_colon_to_space)) . ".jpg",
-                            str_replace('&', 'and', $clean_title) . ".jpg",
-                            str_replace(' ', '_', str_replace('&', 'and', $clean_title)) . ".jpg",
-                            $title_no_subtitle . ".jpg",
-                            str_replace(' ', '_', $title_no_subtitle) . ".jpg"
-                        ];
-                        
-                        foreach ($search_filenames as $filename) {
-                            if (file_exists("../img-web2/" . $filename)) {
-                                $display_image = "../img-web2/" . $filename;
-                                break;
-                            }
-                        }
-                    }
+                    <div class="card-author">By <?php echo htmlspecialchars($book['author_names'] ?: 'Unknown'); ?></div>
+                    <div class="card-category"><?php echo htmlspecialchars($book['category_names'] ?: 'Uncategorized'); ?></div>
                     
-                    // Determine Status Badge styles
-                    $status_badge_class = 'returned'; // Default green
-                    $status_text = 'Available: ' . $book['available_count'] . '/' . $book['quantity'];
+                    <div class="card-status-text <?php echo $status_badge_class; ?>">
+                        <?php echo $status_text; ?>
+                    </div>
                     
-                    if ($book['available_count'] == 0) {
-                        $status_badge_class = 'overdue'; // red
-                        $status_text = 'Borrowed: 0/' . $book['quantity'];
-                    } elseif ($book['available_count'] < $book['quantity']) {
-                        $status_badge_class = 'borrowing'; // yellow
-                    }
-                ?>
-                    <tr>
-                        <td align="center">
-                            <div class="avatar-cover">
-                                <img src="<?php echo $display_image; ?>" alt="Cover" loading="lazy">
-                            </div>
-                        </td>
-                        <td>
-                            <strong style="font-size: 1.1rem; color: var(--text-color); display: block; margin-bottom: 0.25rem;">
-                                <?php echo htmlspecialchars($book['title']); ?>
-                            </strong>
-                            <div style="font-size: 0.85rem; color: #64748b;">By <?php echo htmlspecialchars($book['author_names'] ?: 'Unknown'); ?></div>
-                        </td>
-                        <td>
-                            <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:500;">
-                                <?php echo htmlspecialchars($book['category_names'] ?: 'Uncategorized'); ?>
-                            </span>
-                        </td>
-                        <td align="center"><?php echo $book['pub_year']; ?></td>
-                        <td align="center">
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
-                                <button class="btn-qty" onclick="changeCopies(<?php echo $book['id']; ?>, -1, '<?php echo addslashes($book['title']); ?>', <?php echo $book['quantity']; ?>)">-</button>
-                                <span style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem; min-width: 24px;"><?php echo $book['quantity']; ?></span>
-                                <button class="btn-qty" onclick="changeCopies(<?php echo $book['id']; ?>, 1)">+</button>
-                            </div>
-                        </td>
-                        <td align="center">
-                            <span class="badge badge-<?php echo $status_badge_class; ?>">
-                                <?php echo $status_text; ?>
-                            </span>
-                        </td>
-                        <td align="center">
-                            <div class="action-buttons-group">
-                                <a href="book_detail.php?id=<?php echo $book['id']; ?>" style="color: #64748b; text-decoration: none;">View</a>
-                                <span style="color: #e2e8f0;">|</span>
-                                <a href="book_add.php?id=<?php echo $book['id']; ?>" style="color: #0ea5e9; text-decoration: none;">Edit</a>
-                                <span style="color: #e2e8f0;">|</span>
-                                <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $book['id']; ?>, '<?php echo addslashes($book['title']); ?>', 'book', 'book_delete.php')" style="color: #ef4444; text-decoration: none;">Delete</a>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+                    <div class="card-qty-actions">
+                        <button class="btn-qty" onclick="changeCopies(<?php echo $book['id']; ?>, -1, '<?php echo addslashes($book['title']); ?>', <?php echo $book['quantity']; ?>)">-</button>
+                        <span class="qty-display"><?php echo $book['quantity']; ?></span>
+                        <button class="btn-qty" onclick="changeCopies(<?php echo $book['id']; ?>, 1)">+</button>
+                    </div>
+                </div>
+                
+                <div class="card-footer-actions">
+                    <a href="book_detail.php?id=<?php echo $book['id']; ?>" class="action-btn view"><i class="fas fa-eye"></i> View</a>
+                    <a href="book_add.php?id=<?php echo $book['id']; ?>" class="action-btn edit"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $book['id']; ?>, '<?php echo addslashes($book['title']); ?>', 'book', 'book_delete.php')" class="action-btn delete"><i class="fas fa-trash"></i> Delete</a>
+                </div>
+            </div>
+        <?php endwhile; ?>
+    </div>
+<?php endif; ?>
 
 <style>
-.btn-qty { 
-    width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border-color); 
-    background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: var(--text-color); transition: all 0.2s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+:root {
+    --shopee-orange: #ee4d2d;
+    --card-bg: #ffffff;
+    --text-main: #212121;
+    --text-muted: #757575;
 }
-.btn-qty:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); transform: translateY(-1px); }
-.btn-qty:active { transform: translateY(0); }
+
+/* --- Toolbar UI Modifications --- */
+.custom-toolbar {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.search-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.search-form {
+    width: 100%;
+    max-width: 650px;
+}
+
+.search-input-wrapper {
+    display: flex;
+    border: 2px solid var(--shopee-orange);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.search-input-field {
+    flex: 1;
+    border: none;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    outline: none;
+    color: #333;
+}
+
+.search-submit-btn {
+    background: var(--shopee-orange);
+    color: white;
+    border: none;
+    padding: 0 30px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-submit-btn:hover {
+    background: #d73f22;
+}
+
+.action-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 15px;
+}
+
+.action-btn-primary, .action-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.action-btn-primary {
+    background: #0284c7;
+    color: white;
+    border: none;
+}
+.action-btn-primary:hover {
+    background: #0369a1;
+}
+
+.action-btn-secondary {
+    background: #e0f2fe;
+    color: #0284c7;
+    border: none;
+}
+.action-btn-secondary:hover {
+    background: #bae6fd;
+}
+
+/* --- Shopee Grid Core Layout --- */
+.shopee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 2rem;
+}
+
+.shopee-card {
+    background: var(--card-bg);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.shopee-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: var(--shopee-orange);
+}
+
+.card-img-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 133.33%; /* Forced 3:4 Book Ratio */
+    background: #f5f5f5;
+}
+
+.card-img-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    border-radius: 2px;
+    color: white;
+    font-weight: bold;
+    background: rgba(0,0,0,0.6);
+}
+
+.card-info {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-main);
+    text-decoration: none;
+    line-height: 1.3rem;
+    height: 2.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+.card-title:hover {
+    color: var(--shopee-orange);
+}
+
+.card-author, .card-category {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.card-category {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 2px;
+    align-self: flex-start;
+    max-width: 100%;
+    color: #475569;
+}
+
+.card-status-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+.card-status-text.returned { color: #10b981; }
+.card-status-text.borrowing { color: #f59e0b; }
+.card-status-text.overdue { color: #ef4444; }
+
+.card-qty-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    border-top: 1px dashed #f0f0f0;
+    padding-top: 8px;
+}
+
+.qty-display {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 1rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+.btn-qty { 
+    width: 26px; height: 26px; border-radius: 4px; border: 1px solid #ddd; 
+    background: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--text-main); transition: all 0.2s;
+}
+.btn-qty:hover { 
+    background: var(--shopee-orange); color: white; border-color: var(--shopee-orange); 
+}
+
+.card-footer-actions {
+    display: flex;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+    transform: translateY(100%);
+    transition: transform 0.2s ease;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+.shopee-card:hover .card-footer-actions {
+    transform: translateY(0);
+}
+
+.shopee-card:hover .card-info {
+    padding-bottom: 40px; 
+}
+
+.action-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-weight: 500;
+}
+.action-btn.view { color: #64748b; }
+.action-btn.edit { color: #0ea5e9; border-left: 1px solid #eee; border-right: 1px solid #eee; }
+.action-btn.delete { color: #ef4444; }
+.action-btn:hover { background: #f1f5f9; }
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .action-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .action-section form, .action-btn-primary {
+        width: 100%;
+    }
+    .action-btn-secondary, .action-btn-primary {
+        width: 100%;
+    }
+}
 </style>
 
 <script>
@@ -293,7 +526,7 @@ function changeCopies(id, delta, title = '', currentCount = 0) {
     if (delta < 0 && currentCount === 1) {
         Swal.fire({
             title: 'Remove Last Copy?',
-            text: `You are removing the last copy of '${title}'. This will delete the book entirely. Continue?`,
+            text: `You are removing the last copy of '${title}'. This will delete the book record from the catalog entirely. Proceed?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',

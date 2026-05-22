@@ -17,13 +17,11 @@ $status_type = 'success';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
     $fine = $_POST['fine_per_day'];
     $duration = $_POST['max_loan_days'];
-    $max_books = $_POST['max_books_per_reader'];
 
     mysqli_begin_transaction($db_connect);
     try {
         update_setting('fine_per_day', $fine);
         update_setting('max_loan_days', $duration);
-        update_setting('max_books_per_reader', $max_books);
         
         mysqli_commit($db_connect);
         $status = "System configurations updated successfully!";
@@ -37,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
 // Fetch current values
 $current_fine = get_setting('fine_per_day', '5000');
 $current_duration = get_setting('max_loan_days', '5');
-$current_max_books = get_setting('max_books_per_reader', '3');
 ?>
 
 <div class="search-header">
@@ -64,7 +61,7 @@ $current_max_books = get_setting('max_books_per_reader', '3');
             
             <form action="" method="POST">
                 <input type="hidden" name="update_settings" value="1">
-                <div class="form-grid-three">
+                <div class="form-grid-two">
                     <div class="form-group">
                         <label for="fine_per_day">Late Return Fine (VND/Day)</label>
                         <input type="number" id="fine_per_day" name="fine_per_day" value="<?php echo htmlspecialchars($current_fine); ?>" required>
@@ -74,11 +71,6 @@ $current_max_books = get_setting('max_books_per_reader', '3');
                         <label for="max_loan_days">Standard Loan Duration (Days)</label>
                         <input type="number" id="max_loan_days" name="max_loan_days" value="<?php echo htmlspecialchars($current_duration); ?>" required>
                         <span class="reader-muted">Default borrowing period</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="max_books_per_reader">Max Books Per Reader</label>
-                        <input type="number" id="max_books_per_reader" name="max_books_per_reader" value="<?php echo htmlspecialchars($current_max_books); ?>" required>
-                        <span class="reader-muted">Borrowing limit per member</span>
                     </div>
                 </div>
                 

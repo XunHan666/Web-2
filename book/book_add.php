@@ -203,15 +203,8 @@ $image_to_show = "";
 if (!empty($book_data['cover_image']) && file_exists("../" . $book_data['cover_image'])) {
     $image_to_show = "../" . $book_data['cover_image'];
 } else if ($book_id) {
-    // Attempt fallback to local image library
-    $title = $book_data['title'];
-    $filenames = [strtolower($title) . ".jpg", str_replace(' ', '_', strtolower($title)) . ".jpg"];
-    foreach ($filenames as $name) {
-        if (file_exists("../img-web2/" . $name)) {
-            $image_to_show = "../img-web2/" . $name;
-            break;
-        }
-    }
+    // If no custom cover uploaded, show the online placeholder
+    $image_to_show = "https://placehold.co/400x600/1e4646/white?text=" . urlencode($book_data['title']);
 }
 ?>
 
