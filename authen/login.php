@@ -11,19 +11,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($db_connect, $_POST['username']);
     $password = $_POST['password'];
 
-    $res = mysqli_query($db_connect, "SELECT u.*, r.name role_name FROM users u JOIN roles r ON u.role_id=r.id WHERE u.username='$username' AND u.status='active'");
+    $res = mysqli_query($db_connect, "SELECT u.*, r.name role_name FROM users u JOIN roles r ON u.role_id=r.id WHERE u.username='$username'");
     if ($res && $row = mysqli_fetch_assoc($res)) {
         if (password_verify($password, $row['password'])) {
-            $_SESSION['user_id']   = $row['id'];
-            $_SESSION['username']  = $row['username'];
-            $_SESSION['full_name'] = $row['full_name'];
-            $_SESSION['role_id']   = $row['role_id'];
-            $_SESSION['role_name'] = $row['role_name'];
-            header('Location: ' . ($row['role_id'] == 3 ? '../reader/dashboard.php' : '../index.php'));
-            exit();
+            if ($row['status'] !== 'active') {
+                $error = 'Your account is pending admin approval.';
+            } else {
+                $_SESSION['user_id']   = $row['id'];
+                $_SESSION['username']  = $row['username'];
+                $_SESSION['full_name'] = $row['full_name'];
+                $_SESSION['role_id']   = $row['role_id'];
+                $_SESSION['role_name'] = $row['role_name'];
+                header('Location: ' . ($row['role_id'] == 3 ? '../reader/dashboard.php' : '../index.php'));
+                exit();
+            }
+        } else {
+            $error = 'Invalid username or password.';
         }
+    } else {
+        $error = 'Invalid username or password.';
     }
-    $error = 'Invalid username or password.';
 }
 ?>
 <!DOCTYPE html>
@@ -60,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="auth-footer">
             <a href="forgot_password.php" style="color:#64748b;font-weight:500;display:block;margin-bottom:0.6rem;">Forgot password?</a>
-            Are you a reader? <a href="reader_register.php">Register here</a>
+            Don't have an account? <a href="register.php">Register here</a>
         </div>
     </div>
 </body>

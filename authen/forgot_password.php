@@ -1,3 +1,26 @@
+<?php
+require_once '../env/config.php';
+session_start();
+
+$message = '';
+$message_type = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = mysqli_real_escape_string($db_connect, $_POST['username']);
+    
+    // Check if user exists
+    $res = mysqli_query($db_connect, "SELECT id FROM users WHERE username='$username'");
+    if (mysqli_num_rows($res) > 0) {
+        $user_id = mysqli_fetch_assoc($res)['id'];
+        mysqli_query($db_connect, "INSERT INTO requests (type, user_id, target_id, status) VALUES ('password_reset', $user_id, $user_id, 'pending')");
+        $message = "A password reset request for account '$username' has been sent to the Administrator.";
+        $message_type = 'success';
+    } else {
+        $message = "Username not found in the system.";
+        $message_type = 'error';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,12 +40,23 @@
         </div>
         
         <h1 style="font-size: 1.5rem; color: #1e293b; margin-bottom: 1rem; margin-top: 0;">Account Security</h1>
-        <p style="color: #475569; line-height: 1.5; margin-bottom: 1.5rem; font-size: 0.95rem;">For security protection, password resets are handled manually by the Administrator. This prevents unauthorized access to the library management system.</p>
+        <p style="color: #475569; line-height: 1.5; margin-bottom: 1.5rem; font-size: 0.95rem;">For security protection, password resets are handled manually by the Administrator. Enter your username below to notify the Admin.</p>
         
-        <div style="background:#f8fafc; padding:1.25rem; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:1.5rem; text-align: left;">
-            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem; font-size: 0.9rem;">Contact Administrator</div>
-            <div style="color: #64748b; font-size: 0.85rem; line-height: 1.5;">Please visit the main office or contact your supervisor to verify your identity and have your password reset manually.</div>
-        </div>
+        <?php if ($message): ?>
+            <div class="<?php echo $message_type == 'success' ? 'auth-alert-success' : 'auth-alert-error'; ?>" style="margin-bottom: 1.5rem; text-align: left;">
+                <?php echo htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if ($message_type !== 'success'): ?>
+        <form action="forgot_password.php" method="POST" style="text-align: left; margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
+            </div>
+            <button type="submit" class="btn-submit">Send Request to Admin</button>
+        </form>
+        <?php endif; ?>
         
         <a href="login.php" class="btn-submit" style="text-decoration: none; display: block; box-sizing: border-box; text-align: center;">Back to Login</a>
     </div>

@@ -93,7 +93,9 @@ if (isset($_SESSION['role_id'])) {
                     <!-- ===== STAFF / ADMIN MENU ===== -->
                     <li><a href="<?php echo BASE_URL; ?>index.php" class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Dashboard</a></li>
                     <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books Management</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
+                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
+                        <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
+                    <?php endif; ?>
                     <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans Management</a></li>
                     <li><a href="<?php echo BASE_URL; ?>loan/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
                         Requests

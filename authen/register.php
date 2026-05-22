@@ -18,9 +18,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Username already exists.';
     } else {
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $ok   = mysqli_query($db_connect, "INSERT INTO users (username,password,full_name,role_id,status) VALUES ('$username','$hash','$full_name',2,'active')");
-        $success = $ok ? 'Account created! <a href="login.php">Login now</a>.' : 'Registration failed. Please try again.';
-        if (!$ok) $error = $success;
+        $role = ($_POST['role'] == '2') ? 2 : 3;
+        $status = ($role == 2) ? 'inactive' : 'active';
+        $ok   = mysqli_query($db_connect, "INSERT INTO users (username,password,full_name,role_id,status) VALUES ('$username','$hash','$full_name',$role,'$status')");
+        
+        if ($ok) {
+            $user_id = mysqli_insert_id($db_connect);
+            if ($role == 2) {
+                // Librarian: create request
+                mysqli_query($db_connect, "INSERT INTO requests (type, user_id, target_id, status) VALUES ('librarian_registration', $user_id, $user_id, 'pending')");
+                $success = 'Account created successfully! Please wait for Admin approval.';
+            } else {
+                // Reader: Insert into readers table
+                $phone = mysqli_real_escape_string($db_connect, $_POST['phone']);
+                $email = mysqli_real_escape_string($db_connect, $_POST['email']);
+                $address = mysqli_real_escape_string($db_connect, $_POST['address']);
+                $dob = mysqli_real_escape_string($db_connect, $_POST['dob']);
+                $gender = mysqli_real_escape_string($db_connect, $_POST['gender']);
+                
+                mysqli_query($db_connect, "INSERT INTO readers (name, phone, email, address, dob, gender, status, user_id) VALUES ('$full_name', '$phone', '$email', '$address', '$dob', '$gender', 'active', $user_id)");
+                $success = 'Account created successfully! <a href="login.php">Login now</a>.';
+            }
+        } else {
+            $error = 'Registration failed. Please try again.';
+        }
     }
 }
 ?>
@@ -37,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-card">
         <div class="auth-header">
             <span class="logo-text">LibraryOS</span>
-            <p>Create a staff account.</p>
+            <p>Create a new account.</p>
         </div>
 
         <?php if ($error):   ?><div class="auth-alert-error"><?php echo $error; ?></div><?php endif; ?>
@@ -46,8 +67,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (!$success || $error): ?>
         <form action="register.php" method="POST">
             <div class="form-group">
+                <label for="role">Account Type</label>
+                <select id="role" name="role" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.95rem; margin-top: 0.5rem; outline: none;">
+                    <option value="3">Reader (Can borrow books)</option>
+                    <option value="2">Librarian (Requires Admin Approval)</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="full_name">Full Name</label>
                 <input type="text" id="full_name" name="full_name" placeholder="Nguyen Van A" required autofocus>
+            </div>
+            
+            <div id="reader_fields">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="text" id="phone" name="phone" placeholder="0901234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="email@example.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" name="address" placeholder="123 Le Loi, HCMC" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" name="dob" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.95rem; margin-top: 0.5rem; outline: none; box-sizing: border-box;">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.95rem; margin-top: 0.5rem; outline: none; box-sizing: border-box;">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="username">Username</label>
@@ -69,5 +128,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="auth-footer">Already have an account? <a href="login.php">Sign In</a></div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('role');
+            const readerFields = document.getElementById('reader_fields');
+            const readerInputs = readerFields.querySelectorAll('input, select');
+            
+            function toggleFields() {
+                if (roleSelect.value === '3') {
+                    readerFields.style.display = 'block';
+                    readerInputs.forEach(input => input.required = true);
+                } else {
+                    readerFields.style.display = 'none';
+                    readerInputs.forEach(input => input.required = false);
+                }
+            }
+            
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields(); // initial run
+        });
+    </script>
 </body>
 </html>

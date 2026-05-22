@@ -71,6 +71,17 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
+-- 5. Table: requests (Unified Inbox for admin/librarian)
+CREATE TABLE requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type ENUM('borrow_book', 'librarian_registration', 'password_reset') NOT NULL,
+    user_id INT NOT NULL, 
+    target_id INT NULL,   
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- 5. Table: readers
 CREATE TABLE readers (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -109,7 +120,7 @@ CREATE TABLE loan_details (
     FOREIGN KEY (book_copy_id) REFERENCES book_copies(id)
 );
 
--- 8. System Configuration
+-- 9. System Configuration
 CREATE TABLE settings (
     setting_key VARCHAR(50) PRIMARY KEY,
     setting_value VARCHAR(255) NOT NULL,

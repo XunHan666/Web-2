@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $plain_password = $_POST['password'];
     $role_id = (int)$_POST['role_id'];
 
-    if (empty($username) || empty($plain_password) || empty($full_name)) {
+    if (empty($username) || empty($full_name) || (empty($plain_password) && !isset($user_id))) {
         $submission_error = "Fields missing.";
     } else {
         if (isset($user_id) && $user_id == 1) {
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($user_id)) {
                 $sql = "UPDATE users SET username='$username', full_name='$full_name', role_id=$role_id";
                 if (!empty($plain_password)) {
-                    $sql .= ", password='$hash'";
+                    $sql .= ", password='$hash', reset_requested=0";
                 }
                 $sql .= " WHERE id=$user_id";
             } else {

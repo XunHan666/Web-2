@@ -76,6 +76,13 @@ try {
         INSERT INTO loan_details (loan_id, book_copy_id, status)
         VALUES ($loan_id, $copy_id, 'pending')
     ");
+    
+    // Create unified request
+    $user_id = $_SESSION['user_id'];
+    mysqli_query($db_connect, "
+        INSERT INTO requests (type, user_id, target_id, status)
+        VALUES ('borrow_book', $user_id, $loan_id, 'pending')
+    ");
 
     // Cập nhật trạng thái bản sao sách thành reserved
     mysqli_query($db_connect, "UPDATE book_copies SET status = 'reserved' WHERE id = $copy_id");
