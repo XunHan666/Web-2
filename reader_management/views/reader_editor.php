@@ -29,6 +29,24 @@
                     <input type="text" name="phone" value="<?php echo htmlspecialchars($reader_data['phone']); ?>" required style="width: 100%;">
                 </div>
             </div>
+            <div class="form-group" style="margin-bottom:1rem;">
+                <label>Address *</label>
+                <input type="text" name="address" value="<?php echo htmlspecialchars($reader_data['address']); ?>" required style="width: 100%;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label>Date of Birth *</label>
+                    <input type="date" name="dob" value="<?php echo htmlspecialchars($reader_data['dob']); ?>" required style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label>Gender *</label>
+                    <select name="gender" style="width: 100%;">
+                        <option value="male" <?php echo $reader_data['gender'] == 'male' ? 'selected' : ''; ?>>Male</option>
+                        <option value="female" <?php echo $reader_data['gender'] == 'female' ? 'selected' : ''; ?>>Female</option>
+                        <option value="other" <?php echo $reader_data['gender'] == 'other' ? 'selected' : ''; ?>>Other</option>
+                    </select>
+                </div>
+            </div>
             <div class="form-group">
                 <label>Status</label>
                 <select name="status" style="width: 100%;">

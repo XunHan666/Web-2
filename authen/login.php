@@ -2,7 +2,7 @@
 require_once '../env/config.php';
 session_start();
 
-if (isset($_SESSION['user_id'])) {
+if (isset($_SESSION['account_id'])) {
     header('Location: ../index.php'); exit();
 }
 
@@ -11,13 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($db_connect, $_POST['username']);
     $password = $_POST['password'];
 
-    $res = mysqli_query($db_connect, "SELECT u.*, r.name role_name FROM users u JOIN roles r ON u.role_id=r.id WHERE u.username='$username'");
+    $res = mysqli_query($db_connect, "SELECT u.*, r.name role_name FROM accounts u JOIN roles r ON u.role_id=r.id WHERE u.username='$username'");
     if ($res && $row = mysqli_fetch_assoc($res)) {
         if (password_verify($password, $row['password'])) {
             if ($row['status'] !== 'active') {
                 $error = 'Your account is pending admin approval.';
             } else {
-                $_SESSION['user_id']   = $row['id'];
+                $_SESSION['account_id']   = $row['id'];
                 $_SESSION['username']  = $row['username'];
                 $_SESSION['full_name'] = $row['full_name'];
                 $_SESSION['role_id']   = $row['role_id'];

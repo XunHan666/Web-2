@@ -4,12 +4,12 @@
  */
 ?>
 <div class="breadcrumb" style="margin-bottom: 1.5rem; color: #64748b; font-size: 0.9rem;">
-    Home / System Administration / <strong style="color: var(--text-color);">User Directory</strong>
+    Home / System Administration / <strong style="color: var(--text-color);">Account Directory</strong>
 </div>
 
 <div class="search-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
     <div style="display: flex; align-items: center; gap: 1.5rem;">
-        <h1 style="font-size: 1.5rem; color: var(--text-color); margin: 0;">User Accounts</h1>
+        <h1 style="font-size: 1.5rem; color: var(--text-color); margin: 0;">System Accounts</h1>
         
         <form action="" method="GET" style="display: flex; gap: 0.5rem; margin: 0;">
             <select name="role" class="input-field" style="padding: 0.5rem 1rem; border-radius: 6px; width: auto; font-family: 'Inter', sans-serif; border: 1px solid var(--border-color); outline: none;" onchange="this.form.submit()">
@@ -19,15 +19,15 @@
             </select>
         </form>
     </div>
-    <a href="user_add.php" class="btn btn-primary">+ Register New User</a>
+    <a href="account_add.php" class="btn btn-primary">+ Register New Account</a>
 </div>
 
 <div class="table-container">
     <table class="datatable">
         <thead>
             <tr>
-                <th width="80" style="text-align: center;">User ID</th>
-                <th style="text-align: left;">User Name</th>
+                <th width="80" style="text-align: center;">Account ID</th>
+                <th style="text-align: left;">Account Name</th>
                 <th style="text-align: left;">Username</th>
                 <th>Role</th>
                 <th>Status</th>
@@ -37,7 +37,7 @@
         </thead>
         <tbody>
             <?php if (mysqli_num_rows($staff_result) == 0): ?>
-                <tr><td colspan="7" align="center" style="padding: 3rem; color: #64748b;">No user records found.</td></tr>
+                <tr><td colspan="7" align="center" style="padding: 3rem; color: #64748b;">No account records found.</td></tr>
             <?php else: ?>
                 <?php while ($staff = mysqli_fetch_assoc($staff_result)): ?>
                     <tr>
@@ -70,10 +70,10 @@
                         <td align="center"><?php echo date('M d, Y', strtotime($staff['created_at'])); ?></td>
                         <td align="center">
                             <div class="action-buttons-group">
-                                <a href="user_add.php?id=<?php echo $staff['id']; ?>" style="color: #0ea5e9; text-decoration: none;">Edit</a>
-                                <?php if ($staff['id'] != $_SESSION['user_id']): ?>
+                                <a href="account_add.php?id=<?php echo $staff['id']; ?>" style="color: #0ea5e9; text-decoration: none;">Edit</a>
+                                <?php if ($staff['id'] != $_SESSION['account_id']): ?>
                                     <span style="color: #e2e8f0;">|</span>
-                                    <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $staff['id']; ?>, '<?php echo addslashes($staff['full_name']); ?>', 'user', 'user_delete.php')" style="color: #ef4444; text-decoration: none;">Delete</a>
+                                    <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $staff['id']; ?>, '<?php echo addslashes($staff['full_name']); ?>', 'account', 'account_delete.php')" style="color: #ef4444; text-decoration: none;">Delete</a>
                                 <?php endif; ?>
                             </div>
                         </td>

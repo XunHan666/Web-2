@@ -2,9 +2,9 @@
 // POST-only handler: không có HTML, tự guard inline
 require_once '../env/config.php';
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 3) { header('Location: ../authen/login.php'); exit(); }
-$stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE user_id = ?");
-mysqli_stmt_bind_param($stmt, 'i', $_SESSION['user_id']);
+if (!isset($_SESSION['account_id']) || $_SESSION['role_id'] != 3) { header('Location: ../authen/login.php'); exit(); }
+$stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE account_id = ?");
+mysqli_stmt_bind_param($stmt, 'i', $_SESSION['account_id']);
 mysqli_stmt_execute($stmt);
 $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 if (!$reader) { header('Location: ../authen/login.php'); exit(); }
@@ -78,10 +78,10 @@ try {
     ");
     
     // Create unified request
-    $user_id = $_SESSION['user_id'];
+    $account_id = $_SESSION['account_id'];
     mysqli_query($db_connect, "
-        INSERT INTO requests (type, user_id, target_id, status)
-        VALUES ('borrow_book', $user_id, $loan_id, 'pending')
+        INSERT INTO requests (type, account_id, target_id, status)
+        VALUES ('borrow_book', $account_id, $loan_id, 'pending')
     ");
 
     // Cập nhật trạng thái bản sao sách thành reserved

@@ -18,6 +18,18 @@
             <div class="rp-field"><label>Email *</label><input type="email" name="email" value="<?php echo htmlspecialchars($reader['email']); ?>" required></div>
             <div class="rp-field"><label>Phone *</label><input type="text" name="phone" value="<?php echo htmlspecialchars($reader['phone']); ?>" required></div>
         </div>
+        <div class="rp-field"><label>Address *</label><input type="text" name="address" value="<?php echo htmlspecialchars($reader['address']); ?>" required></div>
+        <div class="rp-form-row">
+            <div class="rp-field"><label>Date of Birth *</label><input type="date" name="dob" value="<?php echo htmlspecialchars($reader['dob']); ?>" required></div>
+            <div class="rp-field">
+                <label>Gender *</label>
+                <select name="gender" required style="width:100%; padding:0.75rem; border:1px solid var(--border-color); border-radius:8px; font-family:'Inter', sans-serif;">
+                    <option value="male" <?php echo $reader['gender'] == 'male' ? 'selected' : ''; ?>>Male</option>
+                    <option value="female" <?php echo $reader['gender'] == 'female' ? 'selected' : ''; ?>>Female</option>
+                    <option value="other" <?php echo $reader['gender'] == 'other' ? 'selected' : ''; ?>>Other</option>
+                </select>
+            </div>
+        </div>
         <button type="submit" class="rp-btn">Save Changes</button>
     </form>
 </div>

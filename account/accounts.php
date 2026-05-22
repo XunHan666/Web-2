@@ -26,7 +26,7 @@ if ($role_filter === 2 || $role_filter === 3) {
 
 $staff_query = "
     SELECT u.*, r.name as role_name 
-    FROM users u 
+    FROM accounts u 
     JOIN roles r ON u.role_id = r.id 
     WHERE $where_clause
     ORDER BY u.id ASC
@@ -34,6 +34,6 @@ $staff_query = "
 $staff_result = mysqli_query($db_connect, $staff_query);
 
 // Load View
-include 'views/users_display.php';
+include 'views/accounts_display.php';
 
 include '../inc/footer.php';

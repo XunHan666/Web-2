@@ -4,13 +4,13 @@
  */
 ?>
 <div class="breadcrumb" style="margin-bottom: 2rem; color: #64748b; font-size: 0.9rem;">
-    Home / User Management / <strong style="color: var(--text-color);"><?php echo isset($user_id) ? 'Edit Record' : 'New Enrollment'; ?></strong>
+    Home / Account Management / <strong style="color: var(--text-color);"><?php echo isset($user_id) ? 'Edit Record' : 'New Enrollment'; ?></strong>
 </div>
 
 <div style="max-width: 800px; margin: 0 auto;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 1.5rem;"><?php echo isset($user_id) ? 'Modify User Account' : 'Register User'; ?></h1>
-        <a href="users.php" class="btn" style="background: #f1f5f9; color: #475569; font-size: 0.9rem;">&larr; Back to Directory</a>
+        <h1 style="font-size: 1.5rem;"><?php echo isset($user_id) ? 'Modify Account' : 'Register Account'; ?></h1>
+        <a href="accounts.php" class="btn" style="background: #f1f5f9; color: #475569; font-size: 0.9rem;">&larr; Back to Directory</a>
     </div>
 
     <div class="form-card" style="padding: 2rem; border-radius: 12px; border: 1px solid #e2e8f0;">
@@ -21,6 +21,7 @@
         <?php endif; ?>
 
         <form method="POST" action="">
+            <input type="hidden" name="req_id" value="<?php echo isset($req_id) ? $req_id : 0; ?>">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
                 <div class="form-group">
                     <label>Full Display Name *</label>
@@ -44,11 +45,35 @@
                         <?php endwhile; ?>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="text" name="phone" value="<?php echo htmlspecialchars($user_data['phone'] ?? ''); ?>" placeholder="e.g. 0901234567" required style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" name="email" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" placeholder="e.g. name@example.com" required style="width: 100%;">
+                </div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Physical Address *</label>
+                    <input type="text" name="address" value="<?php echo htmlspecialchars($user_data['address'] ?? ''); ?>" placeholder="e.g. 123 Main St" required style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label>Date of Birth *</label>
+                    <input type="date" name="dob" value="<?php echo htmlspecialchars($user_data['dob'] ?? ''); ?>" required style="width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label>Gender *</label>
+                    <select name="gender" required style="width: 100%;">
+                        <option value="male" <?php echo (isset($user_data['gender']) && $user_data['gender'] == 'male') ? 'selected' : ''; ?>>Male</option>
+                        <option value="female" <?php echo (isset($user_data['gender']) && $user_data['gender'] == 'female') ? 'selected' : ''; ?>>Female</option>
+                        <option value="other" <?php echo (isset($user_data['gender']) && $user_data['gender'] == 'other') ? 'selected' : ''; ?>>Other</option>
+                    </select>
+                </div>
             </div>
             
             <div style="border-top: 1px solid #f1f5f9; padding-top: 2rem; display: flex; justify-content: flex-end;">
                 <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-weight: 700;">
-                    <?php echo isset($user_id) ? 'Update User Record' : 'Initialize Account'; ?>
+                    <?php echo isset($user_id) ? 'Update Account Record' : 'Initialize Account'; ?>
                 </button>
             </div>
         </form>

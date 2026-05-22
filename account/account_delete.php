@@ -16,13 +16,13 @@ if (isset($_GET['id'])) {
     $target_id = (int)$_GET['id'];
     
     // Prevent self-deletion
-    if ($target_id === (int)$_SESSION['user_id']) {
+    if ($target_id === (int)$_SESSION['account_id']) {
         showAlert("You cannot delete your own account.", "error");
-        echo "<script>setTimeout(() => { window.location.href = 'users.php'; }, 2000);</script>";
+        echo "<script>setTimeout(() => { window.location.href = 'accounts.php'; }, 2000);</script>";
         exit();
     }
     
-    $delete_stmt = mysqli_prepare($db_connect, "DELETE FROM users WHERE id = ?");
+    $delete_stmt = mysqli_prepare($db_connect, "DELETE FROM accounts WHERE id = ?");
     mysqli_stmt_bind_param($delete_stmt, "i", $target_id);
     
     if (mysqli_stmt_execute($delete_stmt)) {
@@ -30,9 +30,9 @@ if (isset($_GET['id'])) {
     } else {
         showAlert("Error deleting user: " . mysqli_error($db_connect), "error");
     }
-    echo "<script>setTimeout(() => { window.location.href = 'users.php'; }, 2000);</script>";
+    echo "<script>setTimeout(() => { window.location.href = 'accounts.php'; }, 2000);</script>";
 } else {
-    header("Location: users.php");
+    header("Location: accounts.php");
     exit();
 }
 

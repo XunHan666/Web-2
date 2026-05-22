@@ -2,7 +2,7 @@
 require_once '../env/config.php';
 session_start();
 
-if (isset($_SESSION['user_id'])) { header('Location: ../index.php'); exit(); }
+if (isset($_SESSION['account_id'])) { header('Location: ../index.php'); exit(); }
 
 $error = ''; $success = '';
 
@@ -14,33 +14,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($password !== $confirm) {
         $error = 'Passwords do not match.';
-    } elseif (mysqli_num_rows(mysqli_query($db_connect, "SELECT id FROM users WHERE username='$username'")) > 0) {
+    } elseif (mysqli_num_rows(mysqli_query($db_connect, "SELECT id FROM accounts WHERE username='$username'")) > 0) {
         $error = 'Username already exists.';
     } else {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
         $role = ($_POST['role'] == '2') ? 2 : 3;
-        $status = ($role == 2) ? 'inactive' : 'active';
-        $ok   = mysqli_query($db_connect, "INSERT INTO users (username,password,full_name,role_id,status) VALUES ('$username','$hash','$full_name',$role,'$status')");
+        $sync_id = null;
         
-        if ($ok) {
-            $user_id = mysqli_insert_id($db_connect);
-            if ($role == 2) {
-                // Librarian: create request
-                mysqli_query($db_connect, "INSERT INTO requests (type, user_id, target_id, status) VALUES ('librarian_registration', $user_id, $user_id, 'pending')");
-                $success = 'Account created successfully! Please wait for Admin approval.';
-            } else {
-                // Reader: Insert into readers table
-                $phone = mysqli_real_escape_string($db_connect, $_POST['phone']);
-                $email = mysqli_real_escape_string($db_connect, $_POST['email']);
-                $address = mysqli_real_escape_string($db_connect, $_POST['address']);
-                $dob = mysqli_real_escape_string($db_connect, $_POST['dob']);
-                $gender = mysqli_real_escape_string($db_connect, $_POST['gender']);
-                
-                mysqli_query($db_connect, "INSERT INTO readers (name, phone, email, address, dob, gender, status, user_id) VALUES ('$full_name', '$phone', '$email', '$address', '$dob', '$gender', 'active', $user_id)");
-                $success = 'Account created successfully! <a href="login.php">Login now</a>.';
+        $phone = mysqli_real_escape_string($db_connect, $_POST['phone']);
+        $email = mysqli_real_escape_string($db_connect, $_POST['email']);
+        $address = mysqli_real_escape_string($db_connect, $_POST['address']);
+        $dob = mysqli_real_escape_string($db_connect, $_POST['dob']);
+        $gender = mysqli_real_escape_string($db_connect, $_POST['gender']);
+        
+        if ($role == 3) {
+            $check_reader = mysqli_query($db_connect, "SELECT id, account_id FROM readers WHERE phone='$phone' OR email='$email' LIMIT 1");
+            if (mysqli_num_rows($check_reader) > 0) {
+                $r_data = mysqli_fetch_assoc($check_reader);
+                if ($r_data['account_id'] !== null) {
+                    $error = 'This phone number or email is already linked to an account. Please login or reset your password.';
+                } else {
+                    $sync_id = $r_data['id']; // We will sync to this profile
+                }
             }
-        } else {
-            $error = 'Registration failed. Please try again.';
+        }
+        
+        if (!$error) {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $status = ($role == 2) ? 'inactive' : 'active';
+            $ok = mysqli_query($db_connect, "INSERT INTO accounts (username, password, full_name, phone, email, address, dob, gender, role_id, status) VALUES ('$username', '$hash', '$full_name', '$phone', '$email', '$address', '$dob', '$gender', $role, '$status')");
+            if ($ok) {
+                $account_id = mysqli_insert_id($db_connect);
+                if ($role == 2) {
+                    // Librarian: create request
+                    mysqli_query($db_connect, "INSERT INTO requests (type, account_id, target_id, status) VALUES ('librarian_registration', $account_id, $account_id, 'pending')");
+                    $success = 'Account created successfully! Please wait for Admin approval.';
+                } else {
+                    // Reader: Insert or Sync into readers table
+                    if ($sync_id) {
+                        mysqli_query($db_connect, "UPDATE readers SET account_id=$account_id WHERE id=$sync_id");
+                        $success = 'Account created and linked to your existing library profile! <a href="login.php">Login now</a>.';
+                    } else {
+                        mysqli_query($db_connect, "INSERT INTO readers (name, phone, email, address, dob, gender, status, account_id) VALUES ('$full_name', '$phone', '$email', '$address', '$dob', '$gender', 'active', $account_id)");
+                        $success = 'Account created successfully! <a href="login.php">Login now</a>.';
+                    }
+                }
+            } else {
+                $error = 'Registration failed. Phone or Email might already be taken.';
+            }
         }
     }
 }
@@ -129,25 +149,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-footer">Already have an account? <a href="login.php">Sign In</a></div>
     </div>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const roleSelect = document.getElementById('role');
-            const readerFields = document.getElementById('reader_fields');
-            const readerInputs = readerFields.querySelectorAll('input, select');
-            
-            function toggleFields() {
-                if (roleSelect.value === '3') {
-                    readerFields.style.display = 'block';
-                    readerInputs.forEach(input => input.required = true);
-                } else {
-                    readerFields.style.display = 'none';
-                    readerInputs.forEach(input => input.required = false);
-                }
-            }
-            
-            roleSelect.addEventListener('change', toggleFields);
-            toggleFields(); // initial run
-        });
-    </script>
 </body>
 </html>

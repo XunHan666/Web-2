@@ -9,10 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($db_connect, $_POST['username']);
     
     // Check if user exists
-    $res = mysqli_query($db_connect, "SELECT id FROM users WHERE username='$username'");
+    $res = mysqli_query($db_connect, "SELECT id FROM accounts WHERE username='$username'");
     if (mysqli_num_rows($res) > 0) {
-        $user_id = mysqli_fetch_assoc($res)['id'];
-        mysqli_query($db_connect, "INSERT INTO requests (type, user_id, target_id, status) VALUES ('password_reset', $user_id, $user_id, 'pending')");
+        $account_id = mysqli_fetch_assoc($res)['id'];
+        mysqli_query($db_connect, "INSERT INTO requests (type, account_id, target_id, status) VALUES ('password_reset', $account_id, $account_id, 'pending')");
         $message = "A password reset request for account '$username' has been sent to the Administrator.";
         $message_type = 'success';
     } else {

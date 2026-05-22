@@ -11,7 +11,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $public_pages = ['login.php', 'register.php', 'reader_register.php', 'forgot_password.php'];
 
 // If user is not logged in and current page is not public, redirect to login
-if (!isset($_SESSION['user_id']) && !in_array($current_page, $public_pages)) {
+if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages)) {
     header("Location: " . BASE_URL . "authen/login.php");
     exit();
 }
@@ -28,13 +28,13 @@ if (isset($_SESSION['role_id'])) {
         // Fetch reader info globally for Reader Portal
         global $reader, $db_connect;
         if (isset($db_connect)) {
-            $stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE user_id = ?");
-            mysqli_stmt_bind_param($stmt, 'i', $_SESSION['user_id']);
+            $stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE account_id = ?");
+            mysqli_stmt_bind_param($stmt, 'i', $_SESSION['account_id']);
             mysqli_stmt_execute($stmt);
             $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
             if (!$reader) { 
-                $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, user_id, status) VALUES (?, ?, 'active')");
-                mysqli_stmt_bind_param($ins_stmt, 'si', $_SESSION['full_name'], $_SESSION['user_id']);
+                $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, account_id, status) VALUES (?, ?, 'active')");
+                mysqli_stmt_bind_param($ins_stmt, 'si', $_SESSION['full_name'], $_SESSION['account_id']);
                 mysqli_stmt_execute($ins_stmt);
                 
                 mysqli_stmt_execute($stmt);
@@ -51,7 +51,8 @@ if (isset($_SESSION['role_id'])) {
         global $db_connect, $pending_count;
         $pending_count = 0;
         if (isset($db_connect)) {
-            $p_res = mysqli_query($db_connect, "SELECT COUNT(*) FROM loans WHERE status = 'pending'");
+            $req_where = ($_SESSION['role_id'] == 1) ? "1=1" : "type='borrow_book'";
+            $p_res = mysqli_query($db_connect, "SELECT COUNT(*) FROM requests WHERE status = 'pending' AND $req_where");
             if ($p_res) $pending_count = mysqli_fetch_array($p_res)[0];
         }
     }
@@ -97,21 +98,21 @@ if (isset($_SESSION['role_id'])) {
                         <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
                     <?php endif; ?>
                     <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans Management</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>loan/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
+                    <li><a href="<?php echo BASE_URL; ?>request_management/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
                         Requests
                         <?php if(isset($pending_count) && $pending_count > 0): ?>
                             <span style="background:var(--danger);color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:4px;"><?php echo $pending_count; ?></span>
                         <?php endif; ?>
                     </a></li>
                     <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): // Admin only ?>
-                        <li><a href="<?php echo BASE_URL; ?>user/users.php" class="<?php echo ($current_page == 'users.php') ? 'active' : ''; ?>">User Management</a></li>
+                        <li><a href="<?php echo BASE_URL; ?>account/accounts.php" class="<?php echo ($current_page == 'accounts.php') ? 'active' : ''; ?>">Account Management</a></li>
                         <li><a href="<?php echo BASE_URL; ?>system/settings.php" class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">Settings</a></li>
                     <?php endif; ?>
                     <?php endif; ?>
                 </ul>
                 
                 <div class="nav-right">
-                    <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php if (isset($_SESSION['account_id'])): ?>
                         <div class="user-info" id="userAccountBtn">
                             <div class="user-avatar">
                                 <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
@@ -124,7 +125,7 @@ if (isset($_SESSION['role_id'])) {
                                 <?php if ($_SESSION['role_id'] == 3): ?>
                                     <a href="<?php echo BASE_URL; ?>reader/profile.php">My Profile</a>
                                 <?php else: ?>
-                                    <a href="<?php echo BASE_URL; ?>user/profile.php">My Profile</a>
+                                    <a href="<?php echo BASE_URL; ?>account/profile.php">My Profile</a>
                                 <?php endif; ?>
                                 <a href="<?php echo BASE_URL; ?>authen/logout.php" style="color: var(--danger); border-top: 1px solid var(--border-color);">Logout</a>
                             </div>

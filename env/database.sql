@@ -60,11 +60,16 @@ CREATE TABLE roles (
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
-CREATE TABLE users (
+CREATE TABLE accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) UNIQUE,
+    email VARCHAR(100) UNIQUE,
+    address TEXT,
+    dob DATE,
+    gender ENUM('male', 'female', 'other') DEFAULT 'male',
     role_id INT,
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -75,11 +80,11 @@ CREATE TABLE users (
 CREATE TABLE requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('borrow_book', 'librarian_registration', 'password_reset') NOT NULL,
-    user_id INT NOT NULL, 
+    account_id INT NOT NULL, 
     target_id INT NULL,   
     status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
 
 -- 5. Table: readers
@@ -92,9 +97,9 @@ CREATE TABLE readers (
     dob DATE,
     gender ENUM('male', 'female', 'other') DEFAULT 'male',
     status ENUM('active', 'inactive') DEFAULT 'active', -- Account status control
-    user_id INT NULL DEFAULT NULL UNIQUE,
+    account_id INT NULL DEFAULT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- 6. Table: loans (Loan Transaction - Master)
