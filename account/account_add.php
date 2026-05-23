@@ -56,6 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if (mysqli_query($db_connect, $sql)) {
+                // If creating a new Reader account, also add to reader table
+                if (!isset($account_id) && $role_id == 3) { // 3 is typically Reader role
+                    $new_account_id = mysqli_insert_id($db_connect);
+                    $reader_sql = "INSERT INTO reader (account_id, full_name, email, phone, address, dob, gender, registration_date) 
+                                   VALUES ($new_account_id, '$full_name', '$email', '$phone', '$address', '$dob', '$gender', NOW())";
+                    mysqli_query($db_connect, $reader_sql);
+                }
+                
                 if (isset($account_id) && !empty($plain_password) && $req_id > 0) {
                     mysqli_query($db_connect, "UPDATE requests SET status='approved' WHERE id=$req_id AND type='password_reset'");
                 }
