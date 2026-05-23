@@ -7,10 +7,11 @@
     Home / <strong style="color: var(--text-color);">Loan Management</strong>
 </div>
 
+<?php $loan_readonly = !empty($circulation_readonly); ?>
 <div class="search-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
     <div>
         <h1 style="font-size: 1.5rem; color: var(--text-color); margin-bottom: 0.25rem;">Loan Log</h1>
-        <p style="color: #64748b; font-size: 0.9rem;">Monitor and manage book loans & returns</p>
+        <p style="color: #64748b; font-size: 0.9rem;"><?php echo $loan_readonly ? 'View circulation history (read-only)' : 'Monitor and manage book loans & returns'; ?></p>
     </div>
     
     <div style="display: flex; gap: 1rem; align-items: center;">
@@ -23,9 +24,17 @@
                 <option value="returned" <?php echo $filter == 'returned' ? 'selected' : ''; ?>>RETURNED</option>
             </select>
         </form>
+        <?php if (!$loan_readonly): ?>
         <a href="borrow.php" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700;">+ New Loan</a>
+        <?php endif; ?>
     </div>
 </div>
+
+<?php if ($loan_readonly): ?>
+<div style="margin-bottom:1.25rem;padding:0.75rem 1rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0369a1;font-size:0.9rem;">
+    <strong>View only</strong> — You can inspect loans. Returns and new loans are handled by librarians.
+</div>
+<?php endif; ?>
 
 <div class="table-container">
     <table class="datatable">
@@ -83,11 +92,14 @@
                         </td>
                         <td align="center">
                             <div class="action-buttons-group">
-                                <a href="loan_detail.php?id=<?php echo $loan['id']; ?>" style="color: #64748b; text-decoration: none;">Details</a> | 
+                                <a href="loan_detail.php?id=<?php echo $loan['id']; ?>" style="color: #64748b; text-decoration: none;">Details</a>
+                                <?php if (!$loan_readonly): ?>
+                                 | 
                                 <?php if ($loan['status'] !== 'closed'): ?>
                                     <a href="return.php?loan_id=<?php echo $loan['id']; ?>" style="color: #10b981; text-decoration: none;">Return</a> | 
                                 <?php endif; ?>
                                 <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $loan['id']; ?>, 'Transaction #<?php echo $loan['id']; ?>', 'loan', 'loan_delete.php')" style="color: #ef4444; font-weight: 700; text-decoration: none;">Delete</a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

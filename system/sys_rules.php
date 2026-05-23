@@ -2,7 +2,7 @@
 /**
  * System Rules Service
  * Provides helpers for reading/writing system settings.
- * NOTE: showAlert() is defined in inc/header.php — do not duplicate here.
+ * NOTE: showAlert() / setFlashAlert() are in inc/alerts.php (loaded via header).
  */
 
 function get_setting($key, $default = '') {

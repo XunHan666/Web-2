@@ -3,6 +3,12 @@
  * Book Detail - Controller (Fixed Image Logic)
  */
 require_once '../env/config.php';
+require_once '../inc/role_guard.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_circulation_view();
+$circulation_readonly = circulation_is_readonly();
 include '../inc/header.php';
 
 $book_id = isset($_GET['id']) ? (int)$_GET['id'] : null;

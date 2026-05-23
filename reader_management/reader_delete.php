@@ -4,6 +4,11 @@
  * Permanently removes a reader and their entire loan history.
  */
 require_once '../env/config.php';
+require_once '../inc/role_guard.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_librarian_circulation();
 include '../inc/header.php';
 
 if (isset($_GET['id'])) {

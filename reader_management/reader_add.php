@@ -3,6 +3,11 @@
  * Reader Add/Edit - Controller
  */
 require_once '../env/config.php';
+require_once '../inc/role_guard.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_librarian_circulation();
 include '../inc/header.php';
 
 $reader_id = isset($_GET['id']) ? (int)$_GET['id'] : null;

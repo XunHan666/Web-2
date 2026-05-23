@@ -3,6 +3,11 @@
  * New Loan Transaction - Controller
  */
 require_once '../env/config.php';
+require_once '../inc/role_guard.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_librarian_circulation();
 include '../inc/header.php';
 
 // Data Preparation

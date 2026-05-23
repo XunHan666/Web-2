@@ -1,14 +1,23 @@
 <?php
 require_once '../env/config.php';
 require_once '../system/sys_rules.php';
-session_start();
+require_once '../inc/alerts.php';
+require_once '../inc/role_guard.php';
 
-if (!isset($_SESSION['account_id']) || !in_array($_SESSION['role_id'], [1, 2])) {
-    header('Location: ../authen/login.php'); exit();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
+if (!isset($_SESSION['account_id']) || !in_array($_SESSION['role_id'], [1, 2], true)) {
+    header('Location: ' . BASE_URL . 'authen/login.php');
+    exit();
+}
+
+$role_id = (int)$_SESSION['role_id'];
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['req_id']) || !in_array($_POST['action'], ['approve', 'reject'])) {
-    header('Location: requests.php'); exit();
+    header('Location: ' . BASE_URL . 'request_management/requests.php');
+    exit();
 }
 
 $req_id = (int)$_POST['req_id'];
@@ -16,10 +25,24 @@ $action = $_POST['action'];
 
 $req_res = mysqli_query($db_connect, "SELECT * FROM requests WHERE id = $req_id AND status = 'pending'");
 if (!$req = mysqli_fetch_assoc($req_res)) {
-    header('Location: requests.php'); exit();
+    header('Location: ' . BASE_URL . 'request_management/requests.php');
+    exit();
 }
 
-$fine_rate = (int)get_setting('fine_per_day', 5000);
+if ($role_id === 1 && !admin_can_process_request($req['type'])) {
+    setFlashAlert('Borrow and return requests are handled by librarians.', 'error');
+    header('Location: ' . BASE_URL . 'request_management/requests.php');
+    exit();
+}
+
+if ($role_id === 2 && !librarian_can_process_request($req['type'])) {
+    setFlashAlert('Only administrators can process this request type.', 'error');
+    header('Location: ' . BASE_URL . 'request_management/requests.php');
+    exit();
+}
+
+$fine_rate      = (int)get_setting('fine_per_day', 5000);
+$max_loan_days  = (int)get_setting('max_loan_days', 5);
 
 mysqli_begin_transaction($db_connect);
 try {
@@ -35,7 +58,7 @@ try {
 
         $sql_loan = "UPDATE loans SET status = '$l_status'";
         if ($action === 'approve') {
-            $sql_loan .= ", borrow_date = CURDATE(), due_date = DATE_ADD(CURDATE(), INTERVAL 5 DAY)";
+            $sql_loan .= ", borrow_date = CURDATE(), due_date = DATE_ADD(CURDATE(), INTERVAL $max_loan_days DAY)";
         }
         mysqli_query($db_connect, "$sql_loan WHERE id = $loan_id");
         mysqli_query($db_connect, "UPDATE loan_details SET status = '$ld_status' WHERE loan_id = $loan_id");
@@ -90,10 +113,10 @@ try {
     }
 
     mysqli_commit($db_connect);
-    header("Location: requests.php?success=$new_status");
+    header('Location: ' . BASE_URL . 'request_management/requests.php?success=' . urlencode($new_status));
 } catch (Exception $e) {
     mysqli_rollback($db_connect);
-    header('Location: requests.php?error=server_error');
+    header('Location: ' . BASE_URL . 'request_management/requests.php?error=server_error');
 }
 exit();
 ?>

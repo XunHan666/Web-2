@@ -3,7 +3,8 @@ require_once '../env/config.php';
 session_start();
 
 if (isset($_SESSION['account_id'])) {
-    header('Location: ../index.php'); exit();
+    header('Location: ' . BASE_URL . 'index.php');
+    exit();
 }
 
 $error = '';
@@ -23,7 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['full_name']  = $row['full_name'];
             $_SESSION['role_id']    = $row['role_id'];
             $_SESSION['role_name']  = $row['role_name'];
-            header('Location: ' . ($row['role_id'] == 3 ? '../dashboard/reader-dashboard.php' : '../index.php'));
+            if ($row['role_id'] == 3) {
+                header('Location: ' . BASE_URL . 'dashboard/reader-dashboard.php');
+            } elseif ($row['role_id'] == 1) {
+                header('Location: ' . BASE_URL . 'dashboard/admin-dashboard.php');
+            } elseif ($row['role_id'] == 2) {
+                header('Location: ' . BASE_URL . 'dashboard/librarian-dashboard.php');
+            } else {
+                header('Location: ' . BASE_URL . 'index.php');
+            }
             exit();
         }
     } else {

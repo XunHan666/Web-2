@@ -449,6 +449,11 @@ td {
     gap: 1.5rem;
 }
 
+.quick-actions-admin {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 720px;
+}
+
 .action-tile {
     display: flex;
     flex-direction: column;
@@ -507,6 +512,48 @@ td {
 }
 .stat-card-danger {
     border-left-color: var(--danger);
+}
+
+/* Dashboard — overview & sections */
+.dashboard-section-title {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 0 0 1.25rem;
+    font-weight: 700;
+}
+
+.dashboard-overview {
+    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.dashboard-overview .stat-card {
+    padding: 1.5rem 1.75rem;
+}
+
+.dashboard-overview .stat-card h3 {
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.65rem;
+}
+
+.dashboard-overview .stat-card .value {
+    font-size: 2.75rem;
+    line-height: 1.1;
+}
+
+.dashboard-overview .stat-card-detail {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0.65rem 0 0;
+    line-height: 1.55;
+}
+
+.dashboard-overview .stat-card-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
 /* --- ADD BOOK SPLIT UX DEMO_2 --- */
@@ -904,7 +951,8 @@ nav ul li a:hover, nav ul li a.active {
     .action-section { flex-direction:column; gap:10px; }
     .action-section form, .action-btn-primary, .action-btn-secondary { width:100%; }
 }
-/* =========================================================
+
+/* =========================================================
    Reader Portal — Stylesheet
    Dùng chung cho tất cả trang trong /reader/
    ========================================================= */

@@ -84,8 +84,11 @@
                     <?php endif; ?>
                     <a href="<?php echo BASE_URL; ?>reader/book.php"
                        class="btn" style="border:1px solid var(--border-color);padding:1rem 2rem;border-radius:10px;background:white;color:#475569;">← Back</a>
+                <?php elseif (!empty($circulation_readonly)): ?>
+                    <a href="books.php" class="btn" style="border:1px solid var(--border-color);padding:1rem 2rem;border-radius:10px;background:white;color:#475569;">← Back to Catalog</a>
+                    <span style="font-size:0.85rem;color:#64748b;">View only — contact a librarian to edit or loan.</span>
                 <?php else: ?>
-                    <!-- Staff/Admin: Loan + Edit -->
+                    <!-- Librarian: Loan + Edit -->
                     <?php if ($book_data['available_copies'] > 0): ?>
                         <a href="../loan/borrow.php" class="btn btn-primary" style="padding:1rem 2.5rem;border-radius:10px;">Create Loan Transaction</a>
                     <?php else: ?>

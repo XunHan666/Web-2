@@ -3,6 +3,12 @@
  * Circulation Management Log - Controller with Filtering
  */
 require_once '../env/config.php';
+require_once '../inc/role_guard.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_circulation_view();
+$circulation_readonly = circulation_is_readonly();
 include '../inc/header.php';
 
 // Get Filter Parameters

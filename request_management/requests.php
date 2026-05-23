@@ -4,19 +4,25 @@
  */
 require_once '../env/config.php';
 require_once '../system/sys_rules.php';
-$page_title = 'Request Management';
-include '../inc/header.php';
+require_once '../inc/role_guard.php';
 
-if (!isset($_SESSION['account_id']) || !in_array($_SESSION['role_id'], [1, 2])) {
-    header('Location: ../index.php');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['account_id']) || !in_array($_SESSION['role_id'], [1, 2], true)) {
+    header('Location: ' . BASE_URL . 'authen/login.php');
     exit();
 }
 
 $role_id = (int)$_SESSION['role_id'];
+$page_title = ($role_id === 1) ? 'System Requests' : 'Request Management';
+$requests_heading = $page_title;
 
-// Admin sees all; Librarian sees borrow_book + return_book
-$where_clause = ($role_id == 1)
-    ? "1=1"
+include '../inc/header.php';
+
+$where_clause = ($role_id === 1)
+    ? "rq.type IN ('librarian_registration','password_reset')"
     : "rq.type IN ('borrow_book','return_book')";
 
 $fine_rate = (int)get_setting('fine_per_day', 5000);

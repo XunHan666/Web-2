@@ -56,14 +56,12 @@ if (isset($_SESSION['role_id'])) {
             exit();
         }
         
-        // Admin/Staff: Get pending requests count for badge
+        // Pending badge: Admin = system requests; Librarian = borrow/return
         global $db_connect, $pending_count;
         $pending_count = 0;
         if (isset($db_connect)) {
-            // Admin thấy tất cả; Librarian thấy borrow + return
-            $req_where = ($_SESSION['role_id'] == 1)
-                ? "1=1"
-                : "type IN ('borrow_book','return_book')";
+            require_once __DIR__ . '/role_guard.php';
+            $req_where = pending_requests_filter_sql((int)$_SESSION['role_id']);
             $p_res = mysqli_query($db_connect, "SELECT COUNT(*) FROM requests WHERE status = 'pending' AND $req_where");
             if ($p_res) $pending_count = mysqli_fetch_array($p_res)[0];
         }
@@ -77,7 +75,7 @@ if (isset($_SESSION['role_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LibraryOS</title>
     
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=1.4">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=1.6">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -109,31 +107,34 @@ if (isset($_SESSION['role_id'])) {
                     <li><a href="<?php echo BASE_URL; ?>reader/my_loans.php" class="<?php echo ($current_page == 'my_loans.php') ? 'active' : ''; ?>">My Loans</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/profile.php" class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">My Profile</a></li>
                 </ul>
-                <?php elseif (isset($_SESSION['role_id'])): ?>
-                <!-- ===== STAFF / ADMIN MENU ===== -->
+                <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+                <!-- ===== ADMIN MENU ===== -->
                 <ul>
-                    <?php
-                    $dashboard_url = ($_SESSION['role_id'] == 1)
-                        ? BASE_URL . 'dashboard/admin-dashboard.php'
-                        : BASE_URL . 'dashboard/librarian-dashboard.php';
-                    $dashboard_active = in_array($current_page, ['admin-dashboard.php', 'librarian-dashboard.php']) ? 'active' : '';
-                    ?>
-                    <li><a href="<?php echo $dashboard_url; ?>" class="<?php echo $dashboard_active; ?>">Dashboard</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books Management</a></li>
-                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
-                        <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
-                    <?php endif; ?>
-                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php') ? 'active' : ''; ?>">Loans Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>dashboard/admin-dashboard.php" class="<?php echo in_array($current_page, ['admin-dashboard.php', 'dashboard.php']) ? 'active' : ''; ?>">Dashboard</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books <span style="font-size:0.65rem;opacity:0.7;">(view)</span></a></li>
+                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php' || $current_page == 'loan_detail.php') ? 'active' : ''; ?>">Loans <span style="font-size:0.65rem;opacity:0.7;">(view)</span></a></li>
                     <li><a href="<?php echo BASE_URL; ?>request_management/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
-                        Request Management
-                        <?php if(isset($pending_count) && $pending_count > 0): ?>
+                        System Requests
+                        <?php if (isset($pending_count) && $pending_count > 0): ?>
                             <span style="background:var(--danger);color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:4px;"><?php echo $pending_count; ?></span>
                         <?php endif; ?>
                     </a></li>
-                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): // Admin only ?>
-                        <li><a href="<?php echo BASE_URL; ?>account/accounts.php" class="<?php echo ($current_page == 'accounts.php') ? 'active' : ''; ?>">Account Management</a></li>
-                        <li><a href="<?php echo BASE_URL; ?>system/settings.php" class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">Settings</a></li>
-                    <?php endif; ?>
+                    <li><a href="<?php echo BASE_URL; ?>account/accounts.php" class="<?php echo ($current_page == 'accounts.php' || strpos($current_page, 'account') !== false) ? 'active' : ''; ?>">Account Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>system/settings.php" class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">Settings</a></li>
+                </ul>
+                <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
+                <!-- ===== LIBRARIAN MENU ===== -->
+                <ul>
+                    <li><a href="<?php echo BASE_URL; ?>dashboard/librarian-dashboard.php" class="<?php echo in_array($current_page, ['librarian-dashboard.php', 'dashboard.php']) ? 'active' : ''; ?>">Dashboard</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php' || strpos($current_page, 'borrow') !== false || strpos($current_page, 'return') !== false) ? 'active' : ''; ?>">Loans Management</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>request_management/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
+                        Request Management
+                        <?php if (isset($pending_count) && $pending_count > 0): ?>
+                            <span style="background:var(--danger);color:white;border-radius:10px;padding:2px 6px;font-size:0.7rem;margin-left:4px;"><?php echo $pending_count; ?></span>
+                        <?php endif; ?>
+                    </a></li>
                 </ul>
                 <?php else: ?>
                 <!-- ===== GUEST SLOGAN ===== -->
@@ -200,30 +201,9 @@ if (isset($_SESSION['role_id'])) {
 
     <div class="container">
 <?php
-/**
- * Global Helper: Show Notification Popup
- * @param string $message The text to display
- * @param string $type success, error, info
- */
-if (!function_exists('showAlert')) {
-    function showAlert($message, $type = 'success') {
-        $icon_type = ($type == 'error') ? 'error' : (($type == 'info') ? 'info' : 'success');
-        
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: '$icon_type',
-                    title: 'LibraryOS Notification',
-                    text: '" . addslashes($message) . "',
-                    confirmButtonColor: '#1e4646',
-                    showClass: { popup: '', backdrop: '' },
-                    hideClass: { popup: '', backdrop: '' }
-                });
-            });
-            </script>";
-        }
-}
+require_once __DIR__ . '/alerts.php';
+renderFlashAlert();
 ?>
 <?php 
 include_once __DIR__ . '/../Notification/views/notif_templates.php';
-?>
+?>

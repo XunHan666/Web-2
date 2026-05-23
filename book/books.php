@@ -3,9 +3,17 @@
  * Book Inventory Directory - Controller (Fixed Header Issue & Image Logic)
  */
 require_once '../env/config.php';
+require_once '../inc/alerts.php';
+require_once '../inc/role_guard.php';
 
-// 1. Xử lý logic TRƯỚC khi gửi bất kỳ nội dung HTML nào (Để tránh lỗi Headers already sent)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_circulation_view();
+
+// Xử lý tăng/giảm bản sao TRƯỚC khi output HTML (PRG + flash message)
 if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
+    deny_if_circulation_readonly();
     $book_id = (int)$_GET['update_copies'];
     $delta = (int)$_GET['delta'];
 
@@ -22,7 +30,7 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
             
             mysqli_query($db_connect, $insert_copy_query);
         }
-        showAlert("Added $delta copy(ies) successfully.");
+        setFlashAlert("Added $delta copy(ies) successfully.");
     }
     elseif ($delta < 0) {
         $abs_delta = abs($delta);
@@ -35,7 +43,7 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
         }
 
         if (count($avail_ids) < $abs_delta) {
-            showAlert("Cannot remove $abs_delta copies! Only " . count($avail_ids) . " are currently available (not borrowed).", "error");
+            setFlashAlert("Cannot remove $abs_delta copies! Only " . count($avail_ids) . " are currently available (not borrowed).", "error");
         } else {
             $ids_str = implode(',', $avail_ids);
             
@@ -50,10 +58,12 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
             $remain_count = mysqli_fetch_array($remain_res)[0];
             
             if ($remain_count == 0) {
-                deleteBook($db_connect, $book_id);
-                showAlert("Last copy removed. The book record has been deleted from the catalog.");
+                $del_stmt = mysqli_prepare($db_connect, "DELETE FROM books WHERE id = ?");
+                mysqli_stmt_bind_param($del_stmt, 'i', $book_id);
+                mysqli_stmt_execute($del_stmt);
+                setFlashAlert("Last copy removed. The book record has been deleted from the catalog.");
             } else {
-                showAlert("Removed $abs_delta copy(ies) successfully.");
+                setFlashAlert("Removed $abs_delta copy(ies) successfully.");
             }
         }
     }
@@ -61,7 +71,8 @@ if (isset($_GET['update_copies']) && isset($_GET['delta'])) {
     exit();
 }
 
-// 2. Sau khi xử lý xong logic chuyển hướng mới include Header
+$circulation_readonly = circulation_is_readonly();
+
 include '../inc/header.php';
 
 
@@ -119,6 +130,12 @@ $books_result = mysqli_stmt_get_result($stmt);
     </div>
 </div>
 
+<?php if (!empty($circulation_readonly)): ?>
+<div style="margin-bottom:1.25rem;padding:0.75rem 1rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0369a1;font-size:0.9rem;">
+    <strong>View only</strong> — You can browse the catalog. Book changes are handled by librarians.
+</div>
+<?php endif; ?>
+
 <div class="custom-toolbar">
     <div class="search-section">
         <form action="" method="GET" class="search-form">
@@ -129,17 +146,16 @@ $books_result = mysqli_stmt_get_result($stmt);
         </form>
     </div>
     
+    <?php if (empty($circulation_readonly)): ?>
     <div class="action-section">
         <form action="" method="POST" style="margin: 0;">
             <button type="submit" name="sync_inventory" class="action-btn-secondary">
                 Sync Inventory
             </button>
         </form>
-        
-        <a href="book_add.php" class="action-btn-primary">
-            + Add New Book
-        </a>
+        <a href="book_add.php" class="action-btn-primary">+ Add New Book</a>
     </div>
+    <?php endif; ?>
 </div>
 
 <?php if (mysqli_num_rows($books_result) == 0): ?>
@@ -187,17 +203,25 @@ $books_result = mysqli_stmt_get_result($stmt);
                         <?php echo $status_text; ?>
                     </div>
                     
+                    <?php if (empty($circulation_readonly)): ?>
                     <div class="card-qty-actions">
                         <button class="btn-qty" onclick="changeCopies(<?php echo $book['id']; ?>, -1, '<?php echo addslashes($book['title']); ?>', <?php echo $book['quantity']; ?>)">-</button>
                         <span class="qty-display"><?php echo $book['quantity']; ?></span>
                         <button class="btn-qty" onclick="changeCopies(<?php echo $book['id']; ?>, 1)">+</button>
                     </div>
+                    <?php else: ?>
+                    <div class="card-qty-actions" style="justify-content:center;">
+                        <span class="qty-display"><?php echo $book['quantity']; ?> copies</span>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="card-footer-actions">
                     <a href="book_detail.php?id=<?php echo $book['id']; ?>" class="action-btn view"><i class="fas fa-eye"></i> View</a>
+                    <?php if (empty($circulation_readonly)): ?>
                     <a href="book_add.php?id=<?php echo $book['id']; ?>" class="action-btn edit"><i class="fas fa-edit"></i> Edit</a>
                     <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $book['id']; ?>, '<?php echo addslashes($book['title']); ?>', 'book', 'book_delete.php')" class="action-btn delete"><i class="fas fa-trash"></i> Delete</a>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endwhile; ?>

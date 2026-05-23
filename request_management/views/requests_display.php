@@ -1,9 +1,10 @@
+<?php $heading = $requests_heading ?? 'Request Management'; ?>
 <div class="breadcrumb" style="margin-bottom: 1.5rem; color: #64748b; font-size: 0.9rem;">
-    Home / <strong style="color: var(--text-color);">Request Management</strong>
+    Home / <strong style="color: var(--text-color);"><?php echo htmlspecialchars($heading); ?></strong>
 </div>
 
 <div class="search-header" style="margin-bottom: 2rem;">
-    <h1 style="font-size: 1.5rem; color: var(--text-color);">System Requests</h1>
+    <h1 style="font-size: 1.5rem; color: var(--text-color);"><?php echo htmlspecialchars($heading); ?></h1>
 </div>
 
 <div class="table-container">
@@ -114,24 +115,6 @@
                                 <span style="font-size: 0.85rem; color: #64748b;">Needs a new password assigned</span>
                             <?php endif; ?>
                         </td>
-                                <?php if ($req['status'] === 'pending'): ?>
-                                    <?php if ($days_late > 0): ?>
-                                        <span style="font-size:0.82rem; background:#fff7ed; color:#9a3412; padding:2px 8px; border-radius:6px; display:inline-block; margin-top:4px;">
-                                            ⚠️ <?php echo $days_late; ?> day<?php echo $days_late!=1?'s':''; ?> late (planned) &mdash; Est. fine today: <strong><?php echo number_format($today_fine); ?> VNĐ</strong>
-                                        </span>
-                                    <?php else: ?>
-                                        <span style="font-size:0.82rem; background:#f0fdf4; color:#166534; padding:2px 8px; border-radius:6px; display:inline-block; margin-top:4px;">
-                                            ✅ On time return planned
-                                        </span>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-
-                            <?php elseif ($req['type'] == 'librarian_registration'): ?>
-                                <span style="font-size: 0.85rem; color: #64748b;">Awaiting account activation</span>
-                            <?php elseif ($req['type'] == 'password_reset'): ?>
-                                <span style="font-size: 0.85rem; color: #64748b;">Needs a new password assigned</span>
-                            <?php endif; ?>
-                        </td>
                         <td>
                             <?php echo date('M d, Y', strtotime($req['created_at'])); ?>
                         </td>
@@ -143,7 +126,7 @@
                         <td align="center">
                             <?php if ($req['status'] == 'pending'): ?>
                                 <?php if ($req_type == 'password_reset'): ?>
-                                    <a href="../account/account_add.php?id=<?php echo $req['target_id']; ?>&req_id=<?php echo $req['id']; ?>" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Change Password</a>
+                                    <a href="<?php echo BASE_URL; ?>account/account_add.php?id=<?php echo $req['target_id']; ?>&req_id=<?php echo $req['id']; ?>" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Change Password</a>
 
                                 <?php elseif ($req_type == 'return_book'): ?>
                                     <!-- Confirm Return: shows actual fine at time of confirm -->
@@ -152,7 +135,7 @@
                                         Fine today: <?php echo number_format($today_fine); ?> VNĐ
                                     </div>
                                     <?php endif; ?>
-                                    <form action="process_request.php" method="POST" style="display:inline;">
+                                    <form action="<?php echo BASE_URL; ?>request_management/process_request.php" method="POST" style="display:inline;">
                                         <input type="hidden" name="req_id" value="<?php echo $req['id']; ?>">
                                         <button type="submit" name="action" value="approve"
                                                 class="btn" style="background:#10b981;color:white;padding:0.25rem 0.75rem;font-size:0.8rem;"
@@ -166,7 +149,7 @@
                                     </form>
 
                                 <?php else: ?>
-                                    <form action="process_request.php" method="POST" style="display:inline;">
+                                    <form action="<?php echo BASE_URL; ?>request_management/process_request.php" method="POST" style="display:inline;">
                                         <input type="hidden" name="req_id" value="<?php echo $req['id']; ?>">
                                         <button type="submit" name="action" value="approve" class="btn" style="background: #10b981; color: white; padding: 0.25rem 0.75rem; font-size: 0.8rem;">Approve</button>
                                         <button type="submit" name="action" value="reject" class="btn" style="background: #ef4444; color: white; padding: 0.25rem 0.75rem; font-size: 0.8rem; margin-left: 0.25rem;">Reject</button>
