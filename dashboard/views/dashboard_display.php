@@ -66,8 +66,9 @@ $is_admin = ($role_id === 1);
     </div>
     <?php endif; ?>
 
-    <div class="stat-card" style="border-left:4px solid #10b981;">
-        <h3 style="color:#059669;"><?php echo $is_admin ? 'Readers' : 'Readers'; ?> <span style="font-size:0.75em; font-weight:400; color:var(--text-muted);">VIEW-ONLY</span></h3>
+    <a href="<?php echo BASE_URL; ?>reader/readers.php"
+       class="stat-card" style="border-left:4px solid #10b981; text-decoration:none; color:inherit; display:block;">
+        <h3 style="color:#059669;">Readers <span style="font-size:0.75em; font-weight:400; color:var(--text-muted);">VIEW-ONLY</span></h3>
         <div class="value" style="color:#10b981;"><?php echo $total_registered_readers; ?></div>
         <p class="stat-card-detail">
             <?php echo $total_registered_readers; ?> reader profile<?php echo $total_registered_readers !== 1 ? 's' : ''; ?>
@@ -77,19 +78,7 @@ $is_admin = ($role_id === 1);
             <?php endif; ?>
             <br><span style="font-weight:600;">View →</span>
         </p>
-    </div>
-
-    <div class="stat-card" style="border-left:4px solid #0ea5e9;">
-        <h3 style="color:#0284c7;">People</h3>
-        <div class="value" style="color:#0ea5e9;"><?php echo $total_registered_readers; ?></div>
-        <p class="stat-card-detail">
-            <?php echo $total_registered_readers; ?> reader profile<?php echo $total_registered_readers !== 1 ? 's' : ''; ?>
-            <?php if ($is_admin && $total_accounts !== null): ?>
-                <br><span style="color:#7c3aed; font-weight:600;"><?php echo $total_accounts; ?> login account<?php echo $total_accounts !== 1 ? 's' : ''; ?></span>
-                <span class="stat-card-note"> (excl. you)</span>
-            <?php endif; ?>
-        </p>
-    </div>
+    </a>
 
     <?php if ($is_admin): ?>
     <a href="<?php echo BASE_URL; ?>loan/loans.php"
@@ -157,7 +146,7 @@ $is_admin = ($role_id === 1);
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"></path>
             </svg>
         </div>
         <span>Settings</span>
