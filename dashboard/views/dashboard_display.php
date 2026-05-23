@@ -45,7 +45,7 @@ $is_admin = ($role_id === 1);
     <?php if ($is_admin): ?>
     <a href="<?php echo BASE_URL; ?>book/books.php"
        class="stat-card" style="border-left:4px solid var(--primary-color); text-decoration:none; color:inherit; display:block;">
-        <h3>Book Inventory</h3>
+        <h3>Books <span style="font-size:0.75em; font-weight:400; color:var(--text-muted);">VIEW-ONLY</span></h3>
         <div class="value"><?php echo $total_inventory_count; ?></div>
         <p class="stat-card-detail">
             <span style="color:var(--success); font-weight:600;"><?php echo $ready_for_loan_count; ?> available</span>
@@ -66,8 +66,21 @@ $is_admin = ($role_id === 1);
     </div>
     <?php endif; ?>
 
+    <div class="stat-card" style="border-left:4px solid #10b981;">
+        <h3 style="color:#059669;"><?php echo $is_admin ? 'Readers' : 'Readers'; ?> <span style="font-size:0.75em; font-weight:400; color:var(--text-muted);">VIEW-ONLY</span></h3>
+        <div class="value" style="color:#10b981;"><?php echo $total_registered_readers; ?></div>
+        <p class="stat-card-detail">
+            <?php echo $total_registered_readers; ?> reader profile<?php echo $total_registered_readers !== 1 ? 's' : ''; ?>
+            <?php if ($is_admin && $total_accounts !== null): ?>
+                <br><span style="color:#7c3aed; font-weight:600;"><?php echo $total_accounts; ?> login account<?php echo $total_accounts !== 1 ? 's' : ''; ?></span>
+                <span class="stat-card-note"> (excl. you)</span>
+            <?php endif; ?>
+            <br><span style="font-weight:600;">View →</span>
+        </p>
+    </div>
+
     <div class="stat-card" style="border-left:4px solid #0ea5e9;">
-        <h3 style="color:#0284c7;"><?php echo $is_admin ? 'People' : 'Readers'; ?></h3>
+        <h3 style="color:#0284c7;">People</h3>
         <div class="value" style="color:#0ea5e9;"><?php echo $total_registered_readers; ?></div>
         <p class="stat-card-detail">
             <?php echo $total_registered_readers; ?> reader profile<?php echo $total_registered_readers !== 1 ? 's' : ''; ?>
@@ -82,7 +95,7 @@ $is_admin = ($role_id === 1);
     <a href="<?php echo BASE_URL; ?>loan/loans.php"
        class="stat-card <?php echo $active_loans_count > 0 ? 'stat-card-danger' : ''; ?>"
        style="border-left:4px solid var(--danger); text-decoration:none; color:inherit; display:block;">
-        <h3 style="color:var(--danger);">Active Loans</h3>
+        <h3 style="color:var(--danger);">Loans <span style="font-size:0.75em; font-weight:400; color:var(--text-muted);">VIEW-ONLY</span></h3>
         <div class="value" style="color:var(--danger);"><?php echo $active_loans_count; ?></div>
         <p class="stat-card-detail">Ongoing or partial · <span style="font-weight:600;">View →</span></p>
     </a>
