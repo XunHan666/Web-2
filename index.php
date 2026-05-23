@@ -1,41 +1,33 @@
 <?php
 /**
- * Dashboard - Controller
+ * Root Entry Point
+ * Redirect all visitors to the public Book Catalog.
+ * - Guests / unregistered users → Browse Books (no login required)
+ * - Logged-in Reader (role 3)  → header.php already sends them to reader/dashboard.php
+ * - Logged-in Staff/Admin      → header.php redirects from reader area to staff dashboard
  */
 require_once 'env/config.php';
-include 'inc/header.php';
 
-// Statistical Data
-$total_inventory_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies"))[0];
-$ready_for_loan_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies WHERE status = 'available'"))[0];
-$total_registered_readers = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM readers"))[0];
-$pending_circulation_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM loans WHERE status IN ('ongoing', 'partial')"))[0];
+// Start session so header.php can read role
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+// Staff / Admin: go to the staff dashboard
+if (isset($_SESSION['role_id']) && $_SESSION['role_id'] != 3) {
+    // Include the old staff dashboard inline
+    include 'inc/header.php';
 
-// 2. Shelf Availability (Items currently present and ready for lending)
-$available_query = mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies WHERE status = 'available'");
-$available_data = mysqli_fetch_array($available_query);
-$ready_for_loan_count = $available_data[0];
+    $total_inventory_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies"))[0];
+    $ready_for_loan_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM book_copies WHERE status = 'available'"))[0];
+    $total_registered_readers = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM readers"))[0];
+    $pending_circulation_count = mysqli_fetch_array(mysqli_query($db_connect, "SELECT COUNT(*) FROM loans WHERE status IN ('ongoing', 'partial')"))[0];
 
-// 3. Registered Membership (Total user base)
-$readers_query = mysqli_query($db_connect, "SELECT COUNT(*) FROM readers");
-$readers_data = mysqli_fetch_array($readers_query);
-$total_registered_readers = $readers_data[0];
-
-// 4. Circulation Load (Current active and partially returned transactions)
-$active_loans_query = mysqli_query($db_connect, "SELECT COUNT(*) FROM loans WHERE status IN ('ongoing', 'partial')");
-$active_loans_data = mysqli_fetch_array($active_loans_query);
-$pending_circulation_count = $active_loans_data[0];
-
-/**
- * UI State: Dynamic personalization
- */
-$staff_display_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'System User';
-$staff_role_label = isset($_SESSION['role_name']) ? $_SESSION['role_name'] : 'Staff';
-$time_of_day_greeting = "Good " . (date('H') < 12 ? 'Morning' : (date('H') < 18 ? 'Afternoon' : 'Evening')) . ", " . $staff_display_name . "!";
-$role_context_banner = "Operational Role: " . ucfirst($staff_role_label);
-
-?>
+    $staff_display_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'System User';
+    $staff_role_label = isset($_SESSION['role_name']) ? $_SESSION['role_name'] : 'Staff';
+    $time_of_day_greeting = "Good " . (date('H') < 12 ? 'Morning' : (date('H') < 18 ? 'Afternoon' : 'Evening')) . ", " . $staff_display_name . "!";
+    $role_context_banner = "Operational Role: " . ucfirst($staff_role_label);
+    ?>
 
 <div class="dashboard-greeting" style="margin-bottom: 3rem;">
     <h1 style="font-size: 2rem; color: var(--text-color); margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.02em;">
@@ -117,4 +109,12 @@ $role_context_banner = "Operational Role: " . ucfirst($staff_role_label);
     </a>
 </div>
 
-<?php include 'inc/footer.php'; ?>
+<?php
+    include 'inc/footer.php';
+} else {
+    // Guest or Reader: redirect to public book catalog
+    header("Location: " . BASE_URL . "reader/book.php");
+    exit();
+}
+?>
+

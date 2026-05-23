@@ -54,21 +54,35 @@
             </div>
 
             <!-- Actions (thay đổi theo role) -->
-            <div style="margin-top: 3rem; display: flex; gap: 1rem; align-items: center;">
+            <div style="margin-top: 3rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                 <?php if (!empty($is_reader_view)): ?>
-                    <!-- Reader: chỉ thấy nút Borrow -->
+                    <!-- Reader view: check login status -->
                     <?php if ($book_data['available_copies'] > 0): ?>
-                        <form action="<?php echo BASE_URL; ?>reader/request_borrow.php" method="POST">
-                            <input type="hidden" name="book_id" value="<?php echo $book_data['id']; ?>">
-                            <button type="submit" class="btn btn-primary" style="padding:1rem 2.5rem; border-radius:10px;"
-                                    onclick="return confirm('Confirm borrow: <?php echo addslashes($book_data['title']); ?>?')">
-                                Borrow this Book
-                            </button>
-                        </form>
+                        <?php if (!isset($_SESSION['account_id'])): ?>
+                            <!-- Guest: prompt to login -->
+                            <a href="<?php echo BASE_URL; ?>authen/login.php" 
+                               class="btn btn-primary" style="padding:1rem 2.5rem; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;">
+                                🔐 Login to Borrow
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>authen/register.php"
+                               class="btn" style="border:1px solid var(--primary-color);padding:1rem 2rem;border-radius:10px;background:white;color:var(--primary-color); text-decoration:none;">
+                                Register Free
+                            </a>
+                        <?php else: ?>
+                            <!-- Logged-in Reader: submit borrow form -->
+                            <form action="<?php echo BASE_URL; ?>reader/request_borrow.php" method="POST">
+                                <input type="hidden" name="book_id" value="<?php echo $book_data['id']; ?>">
+                                <button type="submit" class="btn btn-primary" style="padding:1rem 2.5rem; border-radius:10px;"
+                                        onclick="return confirm('Confirm borrow: <?php echo addslashes($book_data['title']); ?>?')">
+                                    Borrow this Book
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     <?php else: ?>
                         <button class="btn" style="background:#e2e8f0;color:#94a3b8;cursor:not-allowed;padding:1rem 2.5rem;border-radius:10px;" disabled>All Copies Borrowed</button>
                     <?php endif; ?>
-                    <a href="<?php echo BASE_URL; ?>reader/books.php" class="btn" style="border:1px solid var(--border-color);padding:1rem 2rem;border-radius:10px;background:white;color:#475569;">← Back</a>
+                    <a href="<?php echo BASE_URL; ?>reader/book.php"
+                       class="btn" style="border:1px solid var(--border-color);padding:1rem 2rem;border-radius:10px;background:white;color:#475569;">← Back</a>
                 <?php else: ?>
                     <!-- Staff/Admin: Loan + Edit -->
                     <?php if ($book_data['available_copies'] > 0): ?>

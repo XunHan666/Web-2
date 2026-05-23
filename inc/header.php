@@ -8,15 +8,21 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Authentication and Security Check
 $current_page = basename($_SERVER['PHP_SELF']);
+$current_path = $_SERVER['PHP_SELF'];
 $public_pages = ['login.php', 'register.php', 'forgot_password.php'];
 
+// reader/book.php is public (browse & view books without login)
+$is_public_book_page = (
+    strpos($current_path, '/reader/book.php') !== false
+);
+
 // If user is not logged in and current page is not public, redirect to login
-if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages)) {
+if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages) && !$is_public_book_page) {
     header("Location: " . BASE_URL . "authen/login.php");
     exit();
 }
 
-$is_reader_area = (strpos($_SERVER['PHP_SELF'], '/reader/') !== false);
+$is_reader_area = (strpos($current_path, '/reader/') !== false);
 
 if (isset($_SESSION['role_id'])) {
     if ($_SESSION['role_id'] == 3) {

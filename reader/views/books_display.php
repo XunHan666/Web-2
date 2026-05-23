@@ -1,6 +1,26 @@
 <h1 class="rp-page-title">📚 Browse Books</h1>
 <p class="rp-page-sub">Search and discover books available in the library.</p>
 
+<?php if (!isset($_SESSION['account_id'])): ?>
+<div style="background: linear-gradient(135deg, #1e4646 0%, #2d6a6a 100%); border-radius: 14px; padding: 1.25rem 1.75rem; margin-bottom: 1.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div style="color: white;">
+        <strong style="font-size: 1rem; display: block; margin-bottom: 0.2rem;">👋 Welcome, guest!</strong>
+        <span style="font-size: 0.85rem; opacity: 0.85;">Browse our collection freely — login or register to borrow books.</span>
+    </div>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="<?php echo BASE_URL; ?>authen/login.php" 
+           style="background: white; color: #1e4646; padding: 0.55rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.85rem; white-space: nowrap;">
+            🔐 Login
+        </a>
+        <a href="<?php echo BASE_URL; ?>authen/register.php" 
+           style="background: rgba(255,255,255,0.15); color: white; padding: 0.55rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.3); white-space: nowrap;">
+            ✨ Register Free
+        </a>
+    </div>
+</div>
+<?php endif; ?>
+
+
 <form method="GET" class="rp-search-bar">
     <input type="text" name="search" placeholder="Title or author..." value="<?php echo htmlspecialchars($search); ?>">
     <select name="category">
