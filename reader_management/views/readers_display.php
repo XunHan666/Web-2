@@ -33,7 +33,9 @@
         </select>
         <button type="submit" class="btn btn-primary" style="border-radius: 8px;">Filter</button>
     </form>
-    <a href="reader_add.php" class="btn btn-primary" style="border-radius: 8px;">+ Register Reader</a>
+    <?php if (!circulation_is_readonly()): ?>
+        <a href="reader_add.php" class="btn btn-primary" style="border-radius: 8px;">+ Register Reader</a>
+    <?php endif; ?>
 </div>
 
 <div class="table-container" style="border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;">
@@ -81,10 +83,12 @@
                         <td align="center" style="white-space: nowrap;">
                             <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
                                 <a href="javascript:void(0)" onclick="openHistory(<?php echo $reader['id']; ?>, '<?php echo addslashes($reader['name']); ?>')" style="color: #64748b; text-decoration: underline; font-size: 0.9rem;">History</a>
-                                <span style="color: #e2e8f0;">|</span>
-                                <a href="reader_add.php?id=<?php echo $reader['id']; ?>" style="color: #0ea5e9; text-decoration: none; font-size: 0.9rem;">Edit</a>
-                                <span style="color: #e2e8f0;">|</span>
-                                <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $reader['id']; ?>, '<?php echo addslashes($reader['name']); ?>', 'reader', 'reader_delete.php')" style="color: #ef4444; text-decoration: none; font-size: 0.9rem;">Delete</a>
+                                <?php if (!circulation_is_readonly()): ?>
+                                    <span style="color: #e2e8f0;">|</span>
+                                    <a href="reader_add.php?id=<?php echo $reader['id']; ?>" style="color: #0ea5e9; text-decoration: none; font-size: 0.9rem;">Edit</a>
+                                    <span style="color: #e2e8f0;">|</span>
+                                    <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $reader['id']; ?>, '<?php echo addslashes($reader['name']); ?>', 'reader', 'reader_delete.php')" style="color: #ef4444; text-decoration: none; font-size: 0.9rem;">Delete</a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

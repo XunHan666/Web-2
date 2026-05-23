@@ -123,6 +123,9 @@ if (isset($_SESSION['role_id'])) {
                     <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php' || $current_page == 'loan_detail.php') ? 'active' : ''; ?>">
                         Loans <span class="nav-view-badge">VIEW-ONLY</span>
                     </a></li>
+                    <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">
+                        Readers <span class="nav-view-badge">VIEW-ONLY</span>
+                    </a></li>
                     <li><a href="<?php echo BASE_URL; ?>request_management/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
                         System Requests
                         <?php if (isset($pending_count) && $pending_count > 0): ?>

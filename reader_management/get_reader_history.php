@@ -7,7 +7,7 @@ require_once '../inc/role_guard.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_librarian_circulation();
+require_circulation_view();
 
 $reader_id = isset($_GET['reader_id']) ? (int)$_GET['reader_id'] : null;
 

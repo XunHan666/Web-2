@@ -40,26 +40,23 @@ $is_admin = ($role_id === 1);
 
 <h2 class="dashboard-section-title">Overview</h2>
 
-<div class="stats-grid dashboard-overview"
-     style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom:2rem;">
-
-    <?php if ($is_admin): ?>
+<?php if ($is_admin): ?>
+<!-- ── ADMIN: 4 cards cố định 1 hàng ── -->
+<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1.5rem; margin-bottom:2rem;">
 
     <!-- Books VIEW-ONLY -->
     <a href="<?php echo BASE_URL; ?>book/books.php"
        class="stat-card"
        style="border-left:4px solid var(--primary-color); text-decoration:none; color:inherit; display:block;">
-        <h3>
+        <h3 style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             BOOKS
-            <span style="font-size:0.68em; font-weight:700; color:#94a3b8;
-                         background:#f1f5f9; padding:2px 6px; border-radius:4px;
-                         letter-spacing:0.05em; margin-left:5px;">VIEW-ONLY</span>
+            <span style="font-size:0.65em; font-weight:700; color:#94a3b8;
+                         background:#f1f5f9; padding:2px 6px; border-radius:4px; letter-spacing:0.05em;">VIEW-ONLY</span>
         </h3>
         <div class="value"><?php echo $total_inventory_count; ?></div>
         <p class="stat-card-detail">
             <span style="color:var(--success); font-weight:600;"><?php echo $ready_for_loan_count; ?> available</span>
-            ·
-            <span style="color:var(--danger); font-weight:600;"><?php echo $checked_out_count; ?> out</span>
+            · <span style="color:var(--danger); font-weight:600;"><?php echo $checked_out_count; ?> out</span>
             · <span style="font-weight:600;">View →</span>
         </p>
     </a>
@@ -68,11 +65,10 @@ $is_admin = ($role_id === 1);
     <a href="<?php echo BASE_URL; ?>reader_management/readers.php"
        class="stat-card"
        style="border-left:4px solid #10b981; text-decoration:none; color:inherit; display:block;">
-        <h3 style="color:#059669;">
+        <h3 style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; color:#059669;">
             READERS
-            <span style="font-size:0.68em; font-weight:700; color:#94a3b8;
-                         background:#f1f5f9; padding:2px 6px; border-radius:4px;
-                         letter-spacing:0.05em; margin-left:5px;">VIEW-ONLY</span>
+            <span style="font-size:0.65em; font-weight:700; color:#94a3b8;
+                         background:#f1f5f9; padding:2px 6px; border-radius:4px; letter-spacing:0.05em;">VIEW-ONLY</span>
         </h3>
         <div class="value" style="color:#10b981;"><?php echo $total_registered_readers; ?></div>
         <p class="stat-card-detail">
@@ -89,11 +85,10 @@ $is_admin = ($role_id === 1);
     <a href="<?php echo BASE_URL; ?>loan/loans.php"
        class="stat-card <?php echo $active_loans_count > 0 ? 'stat-card-danger' : ''; ?>"
        style="border-left:4px solid var(--danger); text-decoration:none; color:inherit; display:block;">
-        <h3 style="color:var(--danger);">
+        <h3 style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; color:var(--danger);">
             LOANS
-            <span style="font-size:0.68em; font-weight:700; color:#94a3b8;
-                         background:#f1f5f9; padding:2px 6px; border-radius:4px;
-                         letter-spacing:0.05em; margin-left:5px;">VIEW-ONLY</span>
+            <span style="font-size:0.65em; font-weight:700; color:#94a3b8;
+                         background:#f1f5f9; padding:2px 6px; border-radius:4px; letter-spacing:0.05em;">VIEW-ONLY</span>
         </h3>
         <div class="value" style="color:var(--danger);"><?php echo $active_loans_count; ?></div>
         <p class="stat-card-detail">Ongoing or partial · <span style="font-weight:600;">View →</span></p>
@@ -108,20 +103,21 @@ $is_admin = ($role_id === 1);
         <p class="stat-card-detail">Librarian signup &amp; password reset · <span style="font-weight:600;">Review →</span></p>
     </a>
 
-    <?php else: ?>
+</div>
 
-    <!-- Librarian: Book Inventory -->
+<?php else: ?>
+<!-- ── LIBRARIAN: 4 cards gốc ── -->
+<div class="stats-grid dashboard-overview" style="margin-bottom:2rem;">
+
     <div class="stat-card" style="border-left:4px solid var(--primary-color);">
         <h3>Book Inventory</h3>
         <div class="value"><?php echo $total_inventory_count; ?></div>
         <p class="stat-card-detail">
             <span style="color:var(--success); font-weight:600;"><?php echo $ready_for_loan_count; ?> available</span>
-            ·
-            <span style="color:var(--danger); font-weight:600;"><?php echo $checked_out_count; ?> out</span>
+            · <span style="color:var(--danger); font-weight:600;"><?php echo $checked_out_count; ?> out</span>
         </p>
     </div>
 
-    <!-- Librarian: Readers -->
     <a href="<?php echo BASE_URL; ?>reader_management/readers.php"
        class="stat-card" style="border-left:4px solid #10b981; text-decoration:none; color:inherit; display:block;">
         <h3 style="color:#059669;">Readers</h3>
@@ -132,7 +128,6 @@ $is_admin = ($role_id === 1);
         </p>
     </a>
 
-    <!-- Librarian: Active Loans -->
     <a href="<?php echo BASE_URL; ?>loan/loans.php"
        class="stat-card <?php echo $active_loans_count > 0 ? 'stat-card-danger' : ''; ?>"
        style="border-left:4px solid var(--danger); text-decoration:none; color:inherit; display:block;">
@@ -141,7 +136,6 @@ $is_admin = ($role_id === 1);
         <p class="stat-card-detail">Ongoing or partial · <span style="font-weight:600;">Manage →</span></p>
     </a>
 
-    <!-- Librarian: Pending Requests -->
     <a href="<?php echo BASE_URL; ?>request_management/requests.php"
        class="stat-card <?php echo $pending_requests > 0 ? 'stat-card-danger' : ''; ?>"
        style="border-left:4px solid #f59e0b; text-decoration:none; color:inherit; display:block;">
@@ -150,16 +144,14 @@ $is_admin = ($role_id === 1);
         <p class="stat-card-detail">Borrow &amp; return · <span style="font-weight:600;">Review →</span></p>
     </a>
 
-    <?php endif; ?>
-
 </div>
+<?php endif; ?>
 
 <h2 class="dashboard-section-title">Quick Actions</h2>
 <div class="quick-actions-grid <?php echo $is_admin ? 'quick-actions-admin' : ''; ?>" style="margin-bottom:2rem;">
 
 <?php if ($is_admin): ?>
 
-    <!-- Account Management -->
     <a href="<?php echo BASE_URL; ?>account/accounts.php" class="action-tile tile-gray" title="Manage accounts">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -170,7 +162,6 @@ $is_admin = ($role_id === 1);
         <span>Account Management</span>
     </a>
 
-    <!-- System Requests -->
     <a href="<?php echo BASE_URL; ?>request_management/requests.php" class="action-tile tile-secondary" title="System requests">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -183,7 +174,7 @@ $is_admin = ($role_id === 1);
         <span>System Requests</span>
     </a>
 
-    <!-- Settings — bánh răng (gear) -->
+    <!-- Settings — bánh răng -->
     <a href="<?php echo BASE_URL; ?>system/settings.php" class="action-tile tile-primary" title="Library settings">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -196,7 +187,6 @@ $is_admin = ($role_id === 1);
 
 <?php else: ?>
 
-    <!-- Add Book -->
     <a href="<?php echo BASE_URL; ?>book/book_add.php" class="action-tile tile-primary" title="Register new book">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -209,7 +199,6 @@ $is_admin = ($role_id === 1);
         <span>Add Book</span>
     </a>
 
-    <!-- Borrow Book -->
     <a href="<?php echo BASE_URL; ?>loan/borrow.php" class="action-tile tile-secondary" title="Process outgoing loan">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -222,7 +211,6 @@ $is_admin = ($role_id === 1);
         <span>Borrow Book</span>
     </a>
 
-    <!-- Return Book -->
     <a href="<?php echo BASE_URL; ?>loan/loans.php" class="action-tile tile-success" title="Manage returns">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -234,7 +222,6 @@ $is_admin = ($role_id === 1);
         <span>Return Book</span>
     </a>
 
-    <!-- Reader Management -->
     <a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="action-tile tile-gray" title="Manage readers">
         <div class="tile-icon">
             <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">

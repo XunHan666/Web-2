@@ -7,7 +7,7 @@ require_once '../inc/role_guard.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_librarian_circulation();
+require_circulation_view();
 include '../inc/header.php';
 
 
