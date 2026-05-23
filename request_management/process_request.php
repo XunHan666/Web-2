@@ -1,5 +1,6 @@
 <?php
 require_once '../env/config.php';
+require_once '../system/sys_rules.php';
 session_start();
 
 if (!isset($_SESSION['account_id']) || !in_array($_SESSION['role_id'], [1, 2])) {
@@ -18,17 +19,20 @@ if (!$req = mysqli_fetch_assoc($req_res)) {
     header('Location: requests.php'); exit();
 }
 
+$fine_rate = (int)get_setting('fine_per_day', 5000);
+
 mysqli_begin_transaction($db_connect);
 try {
     $new_status = ($action === 'approve') ? 'approved' : 'rejected';
     mysqli_query($db_connect, "UPDATE requests SET status = '$new_status' WHERE id = $req_id");
 
+    // ── BORROW BOOK ──────────────────────────────────────────────
     if ($req['type'] === 'borrow_book') {
-        $loan_id = $req['target_id'];
-        $l_status = ($action === 'approve') ? 'ongoing' : 'rejected';
-        $ld_status = ($action === 'approve') ? 'borrowed' : 'rejected';
-        $bc_status = ($action === 'approve') ? 'borrowed' : 'available';
-        
+        $loan_id  = $req['target_id'];
+        $l_status = ($action === 'approve') ? 'ongoing'  : 'rejected';
+        $ld_status= ($action === 'approve') ? 'borrowed' : 'rejected';
+        $bc_status= ($action === 'approve') ? 'borrowed' : 'available';
+
         $sql_loan = "UPDATE loans SET status = '$l_status'";
         if ($action === 'approve') {
             $sql_loan .= ", borrow_date = CURDATE(), due_date = DATE_ADD(CURDATE(), INTERVAL 5 DAY)";
@@ -36,11 +40,55 @@ try {
         mysqli_query($db_connect, "$sql_loan WHERE id = $loan_id");
         mysqli_query($db_connect, "UPDATE loan_details SET status = '$ld_status' WHERE loan_id = $loan_id");
         mysqli_query($db_connect, "UPDATE book_copies bc JOIN loan_details ld ON bc.id = ld.book_copy_id SET bc.status = '$bc_status' WHERE ld.loan_id = $loan_id");
-        
+
+    // ── RETURN BOOK ──────────────────────────────────────────────
+    } elseif ($req['type'] === 'return_book') {
+        $loan_id = $req['target_id'];
+
+        if ($action === 'approve') {
+            $today = date('Y-m-d');
+
+            // Fetch due_date to calculate actual fine
+            $loan_info = mysqli_fetch_assoc(mysqli_query($db_connect,
+                "SELECT due_date FROM loans WHERE id = $loan_id"
+            ));
+            $due_date  = $loan_info['due_date'];
+
+            // Fine = days past due × rate (0 if on time)
+            $days_late  = max(0, (int)ceil((strtotime($today) - strtotime($due_date)) / 86400));
+            $total_fine = $days_late * $fine_rate;
+
+            // Mark all borrowed items as returned with today's date & fine
+            mysqli_query($db_connect,
+                "UPDATE loan_details
+                 SET status = 'returned', return_date = '$today', fine_amount = $total_fine
+                 WHERE loan_id = $loan_id AND status = 'borrowed'"
+            );
+
+            // Release book copies back to available
+            mysqli_query($db_connect,
+                "UPDATE book_copies bc
+                 JOIN loan_details ld ON bc.id = ld.book_copy_id
+                 SET bc.status = 'available'
+                 WHERE ld.loan_id = $loan_id"
+            );
+
+            // Sync loan master status
+            $metrics = mysqli_fetch_assoc(mysqli_query($db_connect,
+                "SELECT COUNT(*) as total,
+                        SUM(CASE WHEN status='returned' THEN 1 ELSE 0 END) as returned
+                 FROM loan_details WHERE loan_id = $loan_id"
+            ));
+            $new_loan_status = ($metrics['returned'] == $metrics['total']) ? 'closed' : 'partial';
+            mysqli_query($db_connect, "UPDATE loans SET status = '$new_loan_status' WHERE id = $loan_id");
+        }
+        // Rejected: loan stays ongoing, no changes
+
+    // ── LIBRARIAN REGISTRATION ───────────────────────────────────
     } elseif ($req['type'] === 'librarian_registration' && $action === 'approve') {
         mysqli_query($db_connect, "UPDATE accounts SET status = 'active' WHERE id = {$req['target_id']}");
     }
-    
+
     mysqli_commit($db_connect);
     header("Location: requests.php?success=$new_status");
 } catch (Exception $e) {

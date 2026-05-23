@@ -90,7 +90,7 @@ try {
     mysqli_commit($db_connect);
 
     // Redirect về dashboard với thông báo thành công
-    header('Location: dashboard.php?success=pending');
+    header('Location: ' . BASE_URL . 'dashboard/reader-dashboard.php?success=pending');
     exit();
 
 } catch (Exception $e) {

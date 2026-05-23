@@ -22,12 +22,15 @@ if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages) &
     exit();
 }
 
-$is_reader_area = (strpos($current_path, '/reader/') !== false);
+$is_reader_area = str_starts_with($current_path, '/') && strpos($current_path, '/reader/') !== false
+    && str_contains(substr($current_path, strpos($current_path, '/reader/')), '/reader/');
+// Simpler & safer: match /reader/ only at a known segment boundary
+$is_reader_area = (bool)preg_match('#/reader/#', $current_path);
 
 if (isset($_SESSION['role_id'])) {
     if ($_SESSION['role_id'] == 3) {
         if (!$is_reader_area) {
-            header("Location: " . BASE_URL . "reader/dashboard.php");
+            header("Location: " . BASE_URL . "dashboard/reader-dashboard.php");
             exit();
         }
         
@@ -57,7 +60,10 @@ if (isset($_SESSION['role_id'])) {
         global $db_connect, $pending_count;
         $pending_count = 0;
         if (isset($db_connect)) {
-            $req_where = ($_SESSION['role_id'] == 1) ? "1=1" : "type='borrow_book'";
+            // Admin thấy tất cả; Librarian thấy borrow + return
+            $req_where = ($_SESSION['role_id'] == 1)
+                ? "1=1"
+                : "type IN ('borrow_book','return_book')";
             $p_res = mysqli_query($db_connect, "SELECT COUNT(*) FROM requests WHERE status = 'pending' AND $req_where");
             if ($p_res) $pending_count = mysqli_fetch_array($p_res)[0];
         }
@@ -83,13 +89,13 @@ if (isset($_SESSION['role_id'])) {
     <header>
         <div class="nav-container">
             <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
-                <a href="<?php echo BASE_URL; ?>reader/dashboard.php" class="logo">LibraryOS</a>
+                <a href="<?php echo BASE_URL; ?>dashboard/reader-dashboard.php" class="logo">LibraryOS</a>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Reader Portal</span>
             <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
-                <a href="<?php echo BASE_URL; ?>admin-dashboard.php" class="logo">LibraryOS</a>
+                <a href="<?php echo BASE_URL; ?>dashboard/admin-dashboard.php" class="logo">LibraryOS</a>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Admin Portal</span>
             <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
-                <a href="<?php echo BASE_URL; ?>librarian-dashboard.php" class="logo">LibraryOS</a>
+                <a href="<?php echo BASE_URL; ?>dashboard/librarian-dashboard.php" class="logo">LibraryOS</a>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Librarian Portal</span>
             <?php else: ?>
                 <a href="<?php echo BASE_URL; ?>index.php" class="logo">LibraryOS</a>
@@ -98,7 +104,7 @@ if (isset($_SESSION['role_id'])) {
                 <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
                 <!-- ===== READER PORTAL MENU ===== -->
                 <ul>
-                    <li><a href="<?php echo BASE_URL; ?>reader/dashboard.php" class="<?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>">My Dashboard</a></li>
+                    <li><a href="<?php echo BASE_URL; ?>dashboard/reader-dashboard.php" class="<?php echo ($current_page == 'reader-dashboard.php' || $current_page == 'dashboard.php') ? 'active' : ''; ?>">My Dashboard</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/book.php" class="<?php echo ($current_page == 'book.php') ? 'active' : ''; ?>">Browse Books</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/my_loans.php" class="<?php echo ($current_page == 'my_loans.php') ? 'active' : ''; ?>">My Loans</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/profile.php" class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">My Profile</a></li>
@@ -108,8 +114,8 @@ if (isset($_SESSION['role_id'])) {
                 <ul>
                     <?php
                     $dashboard_url = ($_SESSION['role_id'] == 1)
-                        ? BASE_URL . 'admin-dashboard.php'
-                        : BASE_URL . 'librarian-dashboard.php';
+                        ? BASE_URL . 'dashboard/admin-dashboard.php'
+                        : BASE_URL . 'dashboard/librarian-dashboard.php';
                     $dashboard_active = in_array($current_page, ['admin-dashboard.php', 'librarian-dashboard.php']) ? 'active' : '';
                     ?>
                     <li><a href="<?php echo $dashboard_url; ?>" class="<?php echo $dashboard_active; ?>">Dashboard</a></li>
@@ -152,8 +158,8 @@ if (isset($_SESSION['role_id'])) {
                                 <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
                             </div>
                             <div class="user-details">
-                                <span class="user-name"><?php echo $_SESSION['full_name']; ?></span>
-                                <span class="user-role"><?php echo $_SESSION['role_name']; ?></span>
+                                <span class="user-name"><?php echo htmlspecialchars($_SESSION['full_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="user-role"><?php echo htmlspecialchars($_SESSION['role_name'], ENT_QUOTES, 'UTF-8'); ?></span>
                             </div>
                             <div id="accountDropdown">
                                 <?php if ($_SESSION['role_id'] == 3): ?>
