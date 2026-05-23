@@ -5,7 +5,8 @@
 ?>
 <div style="max-width: 1000px; margin: 0 auto;">
     <!-- Navigation -->
-    <a href="books.php" style="text-decoration: none; color: #64748b; margin-bottom: 2rem; display: inline-block;">&larr; Back to Library</a>
+    <?php $back_url = !empty($is_reader_view) ? BASE_URL . 'reader/book.php' : 'books.php'; ?>
+    <a href="<?php echo $back_url; ?>" style="text-decoration: none; color: #64748b; margin-bottom: 2rem; display: inline-block;">← Back to Library</a>
     
     <div style="display: grid; grid-template-columns: 350px 1fr; gap: 3rem; background: var(--card-bg); padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
         

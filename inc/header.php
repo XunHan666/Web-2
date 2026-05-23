@@ -85,20 +85,34 @@ if (isset($_SESSION['role_id'])) {
             <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
                 <a href="<?php echo BASE_URL; ?>reader/dashboard.php" class="logo">LibraryOS</a>
                 <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Reader Portal</span>
+            <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
+                <a href="<?php echo BASE_URL; ?>admin-dashboard.php" class="logo">LibraryOS</a>
+                <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Admin Portal</span>
+            <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
+                <a href="<?php echo BASE_URL; ?>librarian-dashboard.php" class="logo">LibraryOS</a>
+                <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2rem; display: block;">Librarian Portal</span>
             <?php else: ?>
                 <a href="<?php echo BASE_URL; ?>index.php" class="logo">LibraryOS</a>
             <?php endif; ?>
             <nav>
+                <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
+                <!-- ===== READER PORTAL MENU ===== -->
                 <ul>
-                    <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
-                    <!-- ===== READER PORTAL MENU ===== -->
                     <li><a href="<?php echo BASE_URL; ?>reader/dashboard.php" class="<?php echo ($current_page == 'dashboard.php') ? 'active' : ''; ?>">My Dashboard</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/book.php" class="<?php echo ($current_page == 'book.php') ? 'active' : ''; ?>">Browse Books</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/my_loans.php" class="<?php echo ($current_page == 'my_loans.php') ? 'active' : ''; ?>">My Loans</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/profile.php" class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">My Profile</a></li>
-                    <?php else: ?>
-                    <!-- ===== STAFF / ADMIN MENU ===== -->
-                    <li><a href="<?php echo BASE_URL; ?>index.php" class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Dashboard</a></li>
+                </ul>
+                <?php elseif (isset($_SESSION['role_id'])): ?>
+                <!-- ===== STAFF / ADMIN MENU ===== -->
+                <ul>
+                    <?php
+                    $dashboard_url = ($_SESSION['role_id'] == 1)
+                        ? BASE_URL . 'admin-dashboard.php'
+                        : BASE_URL . 'librarian-dashboard.php';
+                    $dashboard_active = in_array($current_page, ['admin-dashboard.php', 'librarian-dashboard.php']) ? 'active' : '';
+                    ?>
+                    <li><a href="<?php echo $dashboard_url; ?>" class="<?php echo $dashboard_active; ?>">Dashboard</a></li>
                     <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books Management</a></li>
                     <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
                         <li><a href="<?php echo BASE_URL; ?>reader_management/readers.php" class="<?php echo ($current_page == 'readers.php') ? 'active' : ''; ?>">Readers Management</a></li>
@@ -114,8 +128,22 @@ if (isset($_SESSION['role_id'])) {
                         <li><a href="<?php echo BASE_URL; ?>account/accounts.php" class="<?php echo ($current_page == 'accounts.php') ? 'active' : ''; ?>">Account Management</a></li>
                         <li><a href="<?php echo BASE_URL; ?>system/settings.php" class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">Settings</a></li>
                     <?php endif; ?>
-                    <?php endif; ?>
                 </ul>
+                <?php else: ?>
+                <!-- ===== GUEST SLOGAN ===== -->
+                <div class="guest-slogan-block">
+                    <div class="guest-slogan-icon">📖</div>
+                    <h2 class="guest-slogan-title">Your next great<br>read awaits.</h2>
+                    <p class="guest-slogan-sub">Explore thousands of books — for free, no account needed.</p>
+                    <div class="guest-slogan-divider"></div>
+                    <ul class="guest-feature-list">
+                        <li><span class="guest-feat-icon">✦</span> Browse our full catalog</li>
+                        <li><span class="guest-feat-icon">✦</span> Borrow books with an account</li>
+                        <li><span class="guest-feat-icon">✦</span> Track your reading history</li>
+                        <li><span class="guest-feat-icon">✦</span> Free registration, always</li>
+                    </ul>
+                </div>
+                <?php endif; ?>
                 
                 <div class="nav-right">
                     <?php if (isset($_SESSION['account_id'])): ?>
