@@ -6,25 +6,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Authentication and Security Check
 $current_page = basename($_SERVER['PHP_SELF']);
 $current_path = $_SERVER['PHP_SELF'];
 $public_pages = ['login.php', 'register.php', 'forgot_password.php'];
 
-// reader/book.php is public (browse & view books without login)
 $is_public_book_page = (
     strpos($current_path, '/reader/book.php') !== false
 );
 
-// If user is not logged in and current page is not public, redirect to login
 if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages) && !$is_public_book_page) {
     header("Location: " . BASE_URL . "authen/login.php");
     exit();
 }
 
-$is_reader_area = str_starts_with($current_path, '/') && strpos($current_path, '/reader/') !== false
-    && str_contains(substr($current_path, strpos($current_path, '/reader/')), '/reader/');
-// Simpler & safer: match /reader/ only at a known segment boundary
 $is_reader_area = (bool)preg_match('#/reader/#', $current_path);
 
 if (isset($_SESSION['role_id'])) {
@@ -33,19 +27,16 @@ if (isset($_SESSION['role_id'])) {
             header("Location: " . BASE_URL . "dashboard/reader-dashboard.php");
             exit();
         }
-        
-        // Fetch reader info globally for Reader Portal
         global $reader, $db_connect;
         if (isset($db_connect)) {
             $stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE account_id = ?");
             mysqli_stmt_bind_param($stmt, 'i', $_SESSION['account_id']);
             mysqli_stmt_execute($stmt);
             $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-            if (!$reader) { 
+            if (!$reader) {
                 $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, account_id, status) VALUES (?, ?, 'active')");
                 mysqli_stmt_bind_param($ins_stmt, 'si', $_SESSION['full_name'], $_SESSION['account_id']);
                 mysqli_stmt_execute($ins_stmt);
-                
                 mysqli_stmt_execute($stmt);
                 $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
             }
@@ -55,8 +46,6 @@ if (isset($_SESSION['role_id'])) {
             header("Location: " . BASE_URL . "index.php");
             exit();
         }
-        
-        // Pending badge: Admin = system requests; Librarian = borrow/return
         global $db_connect, $pending_count;
         $pending_count = 0;
         if (isset($db_connect)) {
@@ -74,13 +63,28 @@ if (isset($_SESSION['role_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LibraryOS</title>
-    
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=1.6">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css?v=1.7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Badge VIEW-ONLY trên nav */
+        .nav-view-badge {
+            display: inline-block;
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: #94a3b8;
+            background: #e8ecef;
+            border-radius: 4px;
+            padding: 1px 5px;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+            margin-left: 5px;
+            line-height: 1.7;
+        }
+    </style>
 </head>
 
 <body>
@@ -98,6 +102,7 @@ if (isset($_SESSION['role_id'])) {
             <?php else: ?>
                 <a href="<?php echo BASE_URL; ?>index.php" class="logo">LibraryOS</a>
             <?php endif; ?>
+
             <nav>
                 <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 3): ?>
                 <!-- ===== READER PORTAL MENU ===== -->
@@ -107,12 +112,17 @@ if (isset($_SESSION['role_id'])) {
                     <li><a href="<?php echo BASE_URL; ?>reader/my_loans.php" class="<?php echo ($current_page == 'my_loans.php') ? 'active' : ''; ?>">My Loans</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/profile.php" class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">My Profile</a></li>
                 </ul>
+
                 <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>
                 <!-- ===== ADMIN MENU ===== -->
                 <ul>
                     <li><a href="<?php echo BASE_URL; ?>dashboard/admin-dashboard.php" class="<?php echo in_array($current_page, ['admin-dashboard.php', 'dashboard.php']) ? 'active' : ''; ?>">Dashboard</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">Books <span style="font-size:0.65rem;opacity:0.7;">(view)</span></a></li>
-                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php' || $current_page == 'loan_detail.php') ? 'active' : ''; ?>">Loans <span style="font-size:0.65rem;opacity:0.7;">(view)</span></a></li>
+                    <li><a href="<?php echo BASE_URL; ?>book/books.php" class="<?php echo ($current_page == 'books.php' || strpos($current_page, 'book') !== false) ? 'active' : ''; ?>">
+                        Books <span class="nav-view-badge">VIEW-ONLY</span>
+                    </a></li>
+                    <li><a href="<?php echo BASE_URL; ?>loan/loans.php" class="<?php echo ($current_page == 'loans.php' || $current_page == 'loan_detail.php') ? 'active' : ''; ?>">
+                        Loans <span class="nav-view-badge">VIEW-ONLY</span>
+                    </a></li>
                     <li><a href="<?php echo BASE_URL; ?>request_management/requests.php" class="<?php echo ($current_page == 'requests.php') ? 'active' : ''; ?>">
                         System Requests
                         <?php if (isset($pending_count) && $pending_count > 0): ?>
@@ -122,6 +132,7 @@ if (isset($_SESSION['role_id'])) {
                     <li><a href="<?php echo BASE_URL; ?>account/accounts.php" class="<?php echo ($current_page == 'accounts.php' || strpos($current_page, 'account') !== false) ? 'active' : ''; ?>">Account Management</a></li>
                     <li><a href="<?php echo BASE_URL; ?>system/settings.php" class="<?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>">Settings</a></li>
                 </ul>
+
                 <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2): ?>
                 <!-- ===== LIBRARIAN MENU ===== -->
                 <ul>
@@ -136,6 +147,7 @@ if (isset($_SESSION['role_id'])) {
                         <?php endif; ?>
                     </a></li>
                 </ul>
+
                 <?php else: ?>
                 <!-- ===== GUEST SLOGAN ===== -->
                 <div class="guest-slogan-block">
@@ -151,7 +163,7 @@ if (isset($_SESSION['role_id'])) {
                     </ul>
                 </div>
                 <?php endif; ?>
-                
+
                 <div class="nav-right">
                     <?php if (isset($_SESSION['account_id'])): ?>
                         <div class="user-info" id="userAccountBtn">
@@ -160,7 +172,7 @@ if (isset($_SESSION['role_id'])) {
                             </div>
                             <div class="user-details">
                                 <span class="user-name"><?php echo htmlspecialchars($_SESSION['full_name'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <span class="user-role"><?php echo htmlspecialchars($_SESSION['role_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                <span class="user-role"><?php echo htmlspecialchars($_SESSION['role_name'], ENT_QUOTES, 'UTF-8'); ?></span>
                             </div>
                             <div id="accountDropdown">
                                 <?php if ($_SESSION['role_id'] == 3): ?>
@@ -178,11 +190,8 @@ if (isset($_SESSION['role_id'])) {
             </nav>
         </div>
     </header>
-    
+
     <script>
-        /**
-         * Simple Dropdown Logic
-         */
         document.addEventListener('DOMContentLoaded', function() {
             const userAccountBtn = document.getElementById('userAccountBtn');
             const accountDropdown = document.getElementById('accountDropdown');
@@ -191,7 +200,6 @@ if (isset($_SESSION['role_id'])) {
                     event.stopPropagation();
                     accountDropdown.style.display = accountDropdown.style.display === 'block' ? 'none' : 'block';
                 });
-                // Close dropdown if user clicks elsewhere
                 document.addEventListener('click', () => {
                     accountDropdown.style.display = 'none';
                 });
@@ -204,6 +212,6 @@ if (isset($_SESSION['role_id'])) {
 require_once __DIR__ . '/alerts.php';
 renderFlashAlert();
 ?>
-<?php 
+<?php
 include_once __DIR__ . '/../Notification/views/notif_templates.php';
 ?>
