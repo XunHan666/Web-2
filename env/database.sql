@@ -89,7 +89,7 @@ CREATE TABLE requests (
     status     ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
-    -- Generated virtual column dùng cho unique constraint bên dưới
+    -- Generated virtual column used for unique constraint below
     pending_return_loan_id INT GENERATED ALWAYS AS (
         CASE WHEN type = 'return_book' AND status = 'pending' THEN target_id ELSE NULL END
     ) STORED
@@ -145,28 +145,28 @@ CREATE TABLE settings (
 --  INDEXES
 -- ============================================================
 
--- book_copies: tìm bản sao available của một sách
+-- book_copies: find available copies of a book
 CREATE INDEX idx_bc_book_status
     ON book_copies (book_id, status);
 
--- accounts: đếm user theo role + status (dashboard stats)
+-- accounts: count users by role + status (dashboard stats)
 CREATE INDEX idx_accounts_role_status
     ON accounts (role_id, status);
 
--- requests: lọc nhanh theo type + status (staff panel)
+-- requests: quick filter by type + status (staff panel)
 CREATE INDEX idx_req_type_status
     ON requests (type, status);
 
--- requests: 1 loan chỉ được có 1 pending return request tại một thời điểm
---   pending_return_loan_id = target_id khi (return_book + pending), còn lại = NULL
---   UNIQUE cho phép nhiều NULL → approved/rejected không bao giờ conflict
+-- requests: 1 loan can only have 1 pending return request at a time
+--   pending_return_loan_id = target_id when (return_book + pending), else = NULL
+--   UNIQUE allows multiple NULLs → approved/rejected will never conflict
 ALTER TABLE requests
     ADD UNIQUE KEY uq_one_pending_return_per_loan (pending_return_loan_id);
 
--- loans: My Loans page — filter theo reader + status
+-- loans: My Loans page — filter by reader + status
 CREATE INDEX idx_loans_reader_status
     ON loans (reader_id, status);
 
--- loan_details: đếm số lượng borrowed/returned per loan
+-- loan_details: count borrowed/returned items per loan
 CREATE INDEX idx_ld_status
     ON loan_details (status);
