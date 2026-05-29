@@ -30,7 +30,7 @@ INSERT INTO roles (id, name) VALUES
 -- 2. Accounts (replaces old `users` table)
 INSERT INTO accounts (id, username, password, full_name, phone, email, role_id, status, created_at) VALUES
 (1, 'admin',  '$2y$10$t8PFiYmvgfYNnctlQAdiM.wTQrFfbrqVRxM0QKZASt9A7yAq3IF5m', 'Administrator', NULL, NULL, 1, 'active', '2026-04-26 10:04:05'),
-(2, 'david',  '$2y$10$/sC4tJEmLaVgmcqiCngLNegSz9wRqJo4r9hHvkh6vA0xXO2rLFKZe', 'Librarian Dave', NULL, NULL, 2, 'active', '2026-04-26 10:43:49');
+(2, 'david',  '$2y$10$LEx2hT4JVH3AjqL.2vTl6uglHORheU.tkkZYS/xkLXwf3CmPhaREG', 'Librarian Dave', NULL, NULL, 2, 'active', '2026-04-26 10:43:49');
 
 -- 3. Categories
 INSERT INTO categories (id, name) VALUES
