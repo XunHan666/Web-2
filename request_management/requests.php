@@ -31,7 +31,7 @@ $requests_query = "
     SELECT rq.*,
            u.full_name as requester_name, u.username as requester_username,
            GROUP_CONCAT(DISTINCT b.title ORDER BY b.title SEPARATOR ', ') as book_title,
-           bc.barcode as book_barcode,
+           GROUP_CONCAT(DISTINCT bc.barcode ORDER BY bc.barcode SEPARATOR ', ') as book_barcode,
            l.due_date as loan_due_date, l.borrow_date as loan_borrow_date
     FROM requests rq
     JOIN accounts u ON rq.account_id = u.id
@@ -40,7 +40,7 @@ $requests_query = "
     LEFT JOIN book_copies bc ON ld.book_copy_id = bc.id
     LEFT JOIN books b ON bc.book_id = b.id
     WHERE $where_clause
-    GROUP BY rq.id
+    GROUP BY rq.id, u.full_name, u.username, l.due_date, l.borrow_date
     ORDER BY FIELD(rq.status, 'pending', 'approved', 'rejected'), rq.created_at DESC
 ";
 $requests_result = mysqli_query($db_connect, $requests_query);
