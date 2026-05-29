@@ -19,7 +19,7 @@ if (!isset($_SESSION['account_id']) && !in_array($current_page, $public_pages) &
     exit();
 }
 
-$is_reader_area = (bool)preg_match('#/reader/#', $current_path);
+$is_reader_area = (bool)preg_match('#/reader/#', $current_path) || basename($current_page) === 'reader-dashboard.php';
 
 if (isset($_SESSION['role_id'])) {
     if ($_SESSION['role_id'] == 3) {
