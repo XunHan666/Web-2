@@ -92,7 +92,7 @@ CREATE TABLE requests (
     -- Generated virtual column dùng cho unique constraint bên dưới
     pending_return_loan_id INT GENERATED ALWAYS AS (
         CASE WHEN type = 'return_book' AND status = 'pending' THEN target_id ELSE NULL END
-    ) VIRTUAL
+    ) STORED
 );
 
 -- 6. Readers
