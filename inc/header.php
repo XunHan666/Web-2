@@ -34,8 +34,14 @@ if (isset($_SESSION['role_id'])) {
             mysqli_stmt_execute($stmt);
             $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
             if (!$reader) {
-                $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, account_id, status) VALUES (?, ?, 'active')");
-                mysqli_stmt_bind_param($ins_stmt, 'si', $_SESSION['full_name'], $_SESSION['account_id']);
+                // Fetch details from accounts to sync all reader info
+                $acc_stmt = mysqli_prepare($db_connect, "SELECT phone, email, address, dob, gender FROM accounts WHERE id = ?");
+                mysqli_stmt_bind_param($acc_stmt, 'i', $_SESSION['account_id']);
+                mysqli_stmt_execute($acc_stmt);
+                $acc_info = mysqli_fetch_assoc(mysqli_stmt_get_result($acc_stmt));
+                
+                $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, phone, email, address, dob, gender, account_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'active')");
+                mysqli_stmt_bind_param($ins_stmt, 'ssssssi', $_SESSION['full_name'], $acc_info['phone'], $acc_info['email'], $acc_info['address'], $acc_info['dob'], $acc_info['gender'], $_SESSION['account_id']);
                 mysqli_stmt_execute($ins_stmt);
                 mysqli_stmt_execute($stmt);
                 $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
