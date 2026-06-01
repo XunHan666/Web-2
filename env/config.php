@@ -30,10 +30,10 @@ if ($is_localhost) {
     $db_name = "library_db";
 } else {
     // Production Environment (InfinityFree)
-    $db_host = "sql201.infinityfree.com";
-    $db_user = "if0_41965602";
-    $db_pass = "3UQXIiXm0bkWH";
-    $db_name = "if0_41965602_library_db";
+    $db_host = "sql310.infinityfree.com";
+    $db_user = "if0_42046782";
+    $db_pass = "IY8y9N6Gj3N0x";
+    $db_name = "if0_42046782_library_db";
 }
 
 // Establish connection to MySQL database
