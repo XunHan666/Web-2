@@ -28,9 +28,10 @@ INSERT INTO roles (id, name) VALUES
 (3, 'reader');
 
 -- 2. Accounts (replaces old `users` table)
-INSERT INTO accounts (id, username, password, full_name, phone, email, role_id, status, created_at) VALUES
-(1, 'admin',  '$2y$10$t8PFiYmvgfYNnctlQAdiM.wTQrFfbrqVRxM0QKZASt9A7yAq3IF5m', 'Administrator', NULL, NULL, 1, 'active', '2026-04-26 10:04:05'),
-(2, 'david',  '$2y$10$WrfC6WxjF2LDLtKZWe4URO5uZH93uhrlYlv48Nt25oVfT7nrvOjJO', 'Librarian Dave', NULL, NULL, 2, 'active', '2026-04-26 10:43:49');
+INSERT INTO accounts (id, username, password, full_name, phone, email, address, dob, gender, role_id, status, created_at) VALUES
+(1, 'admin', '$2y$10$t8PFiYmvgfYNnctlQAdiM.wTQrFfbrqVRxM0QKZASt9A7yAq3IF5m', 'Administrator', NULL, NULL, NULL, NULL, 'male', 1, 'active', '2026-04-26 17:04:05'),
+(2, 'david', '$2y$10$WrfC6WxjF2LDLtKZWe4URO5uZH93uhrlYlv48Nt25oVfT7nrvOjJO', 'Librarian Dave', NULL, NULL, NULL, NULL, 'male', 2, 'active', '2026-04-26 17:43:49'),
+(3, 'mew2', '$2y$10$qyBtW9JWwcWQvzmgXDHuHet6xRoNXlhyfxzHNLXn1Czikn0I5IP4S', 'Mewtwo', '0868280266', 'xkhanhle28@gmail.com', '445 Lac Long Quan', '2005-03-29', 'male', 3, 'active', '2026-05-29 10:37:04');
 
 -- 3. Categories
 INSERT INTO categories (id, name) VALUES
