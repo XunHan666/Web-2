@@ -32,7 +32,8 @@ if (isset($_SESSION['role_id'])) {
             $stmt = mysqli_prepare($db_connect, "SELECT * FROM readers WHERE account_id = ?");
             mysqli_stmt_bind_param($stmt, 'i', $_SESSION['account_id']);
             mysqli_stmt_execute($stmt);
-            $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+            $res = mysqli_stmt_get_result($stmt);
+            $reader = mysqli_fetch_assoc($res);
             if (!$reader) {
                 // Fetch details from accounts to sync all reader info
                 $acc_stmt = mysqli_prepare($db_connect, "SELECT phone, email, address, dob, gender FROM accounts WHERE id = ?");
@@ -40,9 +41,31 @@ if (isset($_SESSION['role_id'])) {
                 mysqli_stmt_execute($acc_stmt);
                 $acc_info = mysqli_fetch_assoc(mysqli_stmt_get_result($acc_stmt));
                 
-                $ins_stmt = mysqli_prepare($db_connect, "INSERT INTO readers (name, phone, email, address, dob, gender, account_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'active')");
-                mysqli_stmt_bind_param($ins_stmt, 'ssssssi', $_SESSION['full_name'], $acc_info['phone'], $acc_info['email'], $acc_info['address'], $acc_info['dob'], $acc_info['gender'], $_SESSION['account_id']);
-                mysqli_stmt_execute($ins_stmt);
+                $phone = $acc_info['phone'];
+                $email = $acc_info['email'];
+                $sync_id = null;
+
+                if (!empty($phone) || !empty($email)) {
+                    $conds = [];
+                    if (!empty($phone)) $conds[] = "phone='" . mysqli_real_escape_string($db_connect, $phone) . "'";
+                    if (!empty($email)) $conds[] = "email='" . mysqli_real_escape_string($db_connect, $email) . "'";
+                    $check_reader = mysqli_query($db_connect, "SELECT id FROM readers WHERE " . implode(' OR ', $conds) . " LIMIT 1");
+                    if ($check_reader && mysqli_num_rows($check_reader) > 0) {
+                        $sync_id = mysqli_fetch_assoc($check_reader)['id'];
+                    }
+                }
+
+                if ($sync_id) {
+                    mysqli_query($db_connect, "UPDATE readers SET account_id=" . (int)$_SESSION['account_id'] . " WHERE id=$sync_id");
+                } else {
+                    $phone_val = empty($acc_info['phone']) ? 'NULL' : "'" . mysqli_real_escape_string($db_connect, $acc_info['phone']) . "'";
+                    $email_val = empty($acc_info['email']) ? 'NULL' : "'" . mysqli_real_escape_string($db_connect, $acc_info['email']) . "'";
+                    $dob_val = empty($acc_info['dob']) ? 'NULL' : "'" . mysqli_real_escape_string($db_connect, $acc_info['dob']) . "'";
+                    
+                    $ins_query = "INSERT INTO readers (name, phone, email, address, dob, gender, account_id, status) VALUES ('" . mysqli_real_escape_string($db_connect, $_SESSION['full_name']) . "', $phone_val, $email_val, '" . mysqli_real_escape_string($db_connect, $acc_info['address']) . "', $dob_val, '" . mysqli_real_escape_string($db_connect, $acc_info['gender']) . "', " . (int)$_SESSION['account_id'] . ", 'active')";
+                    mysqli_query($db_connect, $ins_query);
+                }
+                
                 mysqli_stmt_execute($stmt);
                 $reader = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
             }
