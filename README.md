@@ -1,24 +1,24 @@
 # LibraryOS
 
-Hệ thống quản lý thư viện nội bộ với các tính năng:
-- Tra cứu sách
-- Mượn/trả sách online và tại quầy
-- Quản lý tài khoản và người dùng
-- Duyệt yêu cầu mượn/trả
-- Tính tiền phạt trễ hạn
+Internal library management system with features:
+- Book search
+- Borrow/return books online and at the counter
+- Account and user management
+- Approve borrow/return requests
+- Calculate late fees
 
-## Vai trò người dùng
-- **Admin**: Quản trị hệ thống (tài khoản, cài đặt, yêu cầu hệ thống)
-- **Librarian**: Vận hành sách, mượn/trả, quản lý độc giả
-- **Reader**: Tự phục vụ (mượn, theo dõi, yêu cầu trả)
-- **Guest**: Chỉ xem danh mục sách
+## User Roles
+- **Admin**: System administration (accounts, settings, system requests)
+- **Librarian**: Book operations, borrow/return, reader management
+- **Reader**: Self-service (borrow, track, request return)
+- **Guest**: View book catalog only
 
-## Công nghệ
+## Technologies
 - PHP
 - MySQL
 - Vanilla CSS
 
-## Cài đặt
-1. Cấu hình database trong `env/config.php`
-2. Import `env/database.sql` vào MySQL
-3. Chạy trên XAMPP hoặc môi trường PHP tương tự
+## Installation
+1. Configure database in `env/config.php`
+2. Import `env/database.sql` into MySQL
+3. Run on XAMPP or a similar PHP environment
