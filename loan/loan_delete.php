@@ -4,12 +4,12 @@
  */
 require_once '../env/config.php';
 require_once '../inc/role_guard.php';
+require_once '../inc/alerts.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_librarian_circulation();
-include '../inc/header.php';
-
 
 $loan_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
@@ -29,9 +29,8 @@ if (!$loan) {
 }
 
 if ($loan['status'] !== 'closed') {
-    showAlert("Cannot delete! This transaction is still active. Please process the return first.", "error");
-    echo "<script>setTimeout(() => { window.location.href = 'loans.php'; }, 2500);</script>";
-    include '../inc/footer.php';
+    setFlashAlert("Cannot delete! This transaction is still active. Please process the return first.", "error");
+    header("Location: loans.php");
     exit();
 }
 
@@ -45,11 +44,13 @@ try {
     mysqli_query($db_connect, "DELETE FROM loans WHERE id = $loan_id");
     
     mysqli_commit($db_connect);
-    header("Location: loans.php?delete_success=1");
+    setFlashAlert("Loan transaction deleted successfully.", "success");
+    header("Location: loans.php");
+    exit();
 } catch (Exception $e) {
     mysqli_rollback($db_connect);
-    header("Location: loans.php?error=1");
+    setFlashAlert("Error: Failed to delete transaction.", "error");
+    header("Location: loans.php");
+    exit();
 }
-
-include '../inc/footer.php';
 ?>

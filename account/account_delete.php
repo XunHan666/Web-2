@@ -3,12 +3,16 @@
  * User Deletion Handler
  */
 require_once '../env/config.php';
-include '../inc/header.php';
+require_once '../inc/alerts.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Security: Only Admins can delete users
 if ($_SESSION['role_id'] != 1) {
-    showAlert("Admin access required.", "error");
-    echo "<script>setTimeout(() => { window.location.href = '../index.php'; }, 1500);</script>";
+    setFlashAlert("Admin access required.", "error");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -17,8 +21,8 @@ if (isset($_GET['id'])) {
     
     // Prevent self-deletion
     if ($target_id === (int)$_SESSION['account_id']) {
-        showAlert("You cannot delete your own account.", "error");
-        echo "<script>setTimeout(() => { window.location.href = 'accounts.php'; }, 2000);</script>";
+        setFlashAlert("You cannot delete your own account.", "error");
+        header("Location: accounts.php");
         exit();
     }
     
@@ -26,15 +30,14 @@ if (isset($_GET['id'])) {
     mysqli_stmt_bind_param($delete_stmt, "i", $target_id);
     
     if (mysqli_stmt_execute($delete_stmt)) {
-        showAlert("User account has been permanently removed.");
+        setFlashAlert("User account has been permanently removed.");
     } else {
-        showAlert("Error deleting user: " . mysqli_error($db_connect), "error");
+        setFlashAlert("Error deleting user: " . mysqli_error($db_connect), "error");
     }
-    echo "<script>setTimeout(() => { window.location.href = 'accounts.php'; }, 2000);</script>";
+    header("Location: accounts.php");
+    exit();
 } else {
     header("Location: accounts.php");
     exit();
 }
-
-include '../inc/footer.php';
 ?>
