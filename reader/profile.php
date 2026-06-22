@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $chk = mysqli_prepare($db_connect, "SELECT id FROM accounts WHERE email=? AND id!=?");
             mysqli_stmt_bind_param($chk, 'si', $email, $uid);
             mysqli_stmt_execute($chk);
-            if (mysqli_stmt_num_rows(mysqli_stmt_get_result($chk)) > 0) $errors[] = 'Email already in use.';
+            if (mysqli_num_rows(mysqli_stmt_get_result($chk)) > 0) $errors[] = 'Email already in use.';
         }
 
         if (!$errors) {
