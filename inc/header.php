@@ -139,7 +139,6 @@ if (isset($_SESSION['role_id'])) {
                     <li><a href="<?php echo BASE_URL; ?>dashboard/reader-dashboard.php" class="<?php echo ($current_page == 'reader-dashboard.php' || $current_page == 'dashboard.php') ? 'active' : ''; ?>">My Dashboard</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/book.php" class="<?php echo ($current_page == 'book.php') ? 'active' : ''; ?>">Browse Books</a></li>
                     <li><a href="<?php echo BASE_URL; ?>reader/my_loans.php" class="<?php echo ($current_page == 'my_loans.php') ? 'active' : ''; ?>">My Loans</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>reader/profile.php" class="<?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">My Profile</a></li>
                 </ul>
 
                 <?php elseif (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 1): ?>

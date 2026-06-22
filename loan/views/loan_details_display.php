@@ -38,8 +38,23 @@
                 </tr>
             </thead>
             <tbody>
+                <?php 
+                $fine_rate = (int)get_setting('fine_per_day', 5000);
+                $current_date = date('Y-m-d');
+                $days_late_count = 0;
+                if ($current_date > $loan_info['due_date']) {
+                    $days_late_count = (strtotime($current_date) - strtotime($loan_info['due_date'])) / (60 * 60 * 24);
+                }
+                $calculated_fine = $days_late_count * $fine_rate;
+                ?>
                 <?php while ($item = mysqli_fetch_assoc($items_recordset)): ?>
-                        <?php static $stt = 1; ?>
+                        <?php 
+                        static $stt = 1; 
+                        $display_fine = $item['fine_amount'];
+                        if ($item['status'] == 'borrowed' && $current_date > $loan_info['due_date']) {
+                            $display_fine = $calculated_fine;
+                        }
+                        ?>
                         <td align="center" style="font-weight: 600; color: #64748b;">
                             <?php echo $stt++; ?>
                         </td>
@@ -52,7 +67,7 @@
                         </td>
                         <td align="center"><?php echo $item['return_date'] ? date('M d, Y', strtotime($item['return_date'])) : '--'; ?></td>
                         <td align="right" style="font-weight: 700; font-family: monospace; color: #ef4444;">
-                            <?php echo number_format($item['fine_amount']); ?> VNĐ
+                            <?php echo number_format($display_fine); ?> VNĐ
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -67,7 +82,13 @@
             <h2 style="font-size: 1.5rem; color: var(--text-color);"><?php 
                 mysqli_data_seek($items_recordset, 0);
                 $total_fine = 0;
-                while($f = mysqli_fetch_assoc($items_recordset)) { $total_fine += $f['fine_amount']; }
+                while($f = mysqli_fetch_assoc($items_recordset)) { 
+                    $f_amount = $f['fine_amount'];
+                    if ($f['status'] == 'borrowed' && $current_date > $loan_info['due_date']) {
+                        $f_amount = $calculated_fine;
+                    }
+                    $total_fine += $f_amount; 
+                }
                 echo number_format($total_fine); 
             ?> VNĐ</h2>
         </div>
