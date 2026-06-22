@@ -5,12 +5,11 @@
  */
 require_once '../env/config.php';
 require_once '../inc/role_guard.php';
-require_once '../inc/alerts.php';
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_librarian_circulation();
+include '../inc/header.php';
 
 if (isset($_GET['id'])) {
     $reader_id = (int)$_GET['id'];
@@ -29,7 +28,7 @@ if (isset($_GET['id'])) {
     $active_loans_res = mysqli_stmt_get_result($check_stmt);
     
     if (mysqli_num_rows($active_loans_res) > 0) {
-        setFlashAlert("Cannot delete! This reader currently has unreturned books. Please process returns first.", "error");
+        showAlert("Cannot delete! This reader currently has unreturned books. Please process returns first.", "error");
     } else {
         mysqli_begin_transaction($db_connect);
         try {
@@ -45,16 +44,17 @@ if (isset($_GET['id'])) {
             mysqli_stmt_execute($delete_reader_stmt);
             
             mysqli_commit($db_connect);
-            setFlashAlert("Reader profile and historical data deleted successfully.");
+            showAlert("Reader profile and historical data deleted successfully.");
         } catch (Exception $e) {
             mysqli_rollback($db_connect);
-            setFlashAlert("Error deleting reader: " . $e->getMessage(), "error");
+            showAlert("Error deleting reader: " . $e->getMessage(), "error");
         }
     }
-    header("Location: readers.php");
-    exit();
+    echo "<script>setTimeout(() => { window.location.href = 'readers.php'; }, 2000);</script>";
 } else {
     header("Location: readers.php");
     exit();
 }
+
+include '../inc/footer.php';
 ?>
